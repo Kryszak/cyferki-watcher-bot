@@ -1,0 +1,13 @@
+{
+  "name": "cyferki-watcher-bot",
+  "version": "1.0.0",
+  "description": "Discord bot guarding correct order in #cyferki channel game",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "kryszak",
+  "dependencies": {
+    "discord.js": "^13.6.0",
+    "express": "^4.17.3"
+  }
+}
