@@ -41,7 +41,7 @@ function extractNumberFromMessage(currentMessage) {
 }
 
 function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
-    return extractNumberFromMessage(currentMessage) - 1 === parseInt(previousMessage.content);
+    return extractNumberFromMessage(currentMessage) - 1 === extractNumberFromMessage(previousMessage.content);
 }
 
 function deleteMessage(message) {
