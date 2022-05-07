@@ -39,8 +39,8 @@ function extractNumberFromMessage(currentMessage) {
     return extractedNumber;
 }
 
-function newlyPostedNumberIsNotCorrect(currentMessage, previousMessage) {
-    return extractNumberFromMessage(currentMessage) - 1 !== parseInt(previousMessage.content);
+function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
+    return extractNumberFromMessage(currentMessage) - 1 === parseInt(previousMessage.content);
 }
 
 function deleteMessage(message) {
@@ -49,12 +49,33 @@ function deleteMessage(message) {
         .catch(error => logger.error("Error while removing message: %o", error))
 }
 
+function notifyWrongNumberProvided(channel, author) {
+    channel.send(`<@${author}> ${WRONG_INCREMENT_MESSAGE}`);
+}
+
 function notifyWrongMessageFormat(channel, author) {
     channel.send(`<@${author}> ${WRONG_MESSAGE_CONTENT}`);
 }
 
-function notifyWrongNumberProvided(channel, author) {
-    channel.send(`<@${author}> ${WRONG_INCREMENT_MESSAGE}`);
+function verifyNewlyPostedNumber(messages, channel, message) {
+    let lastMessages = extractLastMessagesFromResponse(messages, 2);
+    let previousMessage = lastMessages[0];
+    let currentMessage = lastMessages[1];
+    logger.debug("Previous message: %o", previousMessage.content);
+    logger.debug("Current message: %o", currentMessage.content);
+    try {
+        if (isNewlyPostedNumberCorrect(currentMessage, previousMessage)) {
+            logger.info("Verified correctly.")
+        } else {
+            logger.info("Verification failed.")
+            notifyWrongNumberProvided(channel, message.author.id);
+            deleteMessage(message);
+        }
+    } catch (error) {
+        logger.error("Error occurred while checking numbers: %o", error);
+        notifyWrongMessageFormat(channel, message.author.id);
+        deleteMessage(message);
+    }
 }
 
 client.on('ready', () => {
@@ -65,27 +86,11 @@ client.on('messageCreate', message => {
     logger.trace("message sent by: %o", message.author.username);
     let channel = getChannelId(message);
     if (isSentToWatchedChannel(channel) && isSentFromUser(message)) {
-        logger.info(`Veryfing received message to channel ${WATCHED_CHANNEL}`)
+        logger.info(`Verifying received message to channel ${WATCHED_CHANNEL}`)
         logger.debug("reading last %o messages", READ_MESSAGES_COUNT);
         getLastMessagesFromWatchedChannel(channel)
             .then(messages => {
-                let lastMessages = extractLastMessagesFromResponse(messages, 2);
-                let previousMessage = lastMessages[0];
-                let currentMessage = lastMessages[1];
-                logger.debug("Previous message: %o", previousMessage.content);
-                logger.debug("Current message: %o", currentMessage.content);
-                try {
-                    if (newlyPostedNumberIsNotCorrect(currentMessage, previousMessage)) {
-                        notifyWrongNumberProvided(channel, message.author.id);
-                        deleteMessage(message);
-                    } else {
-                        logger.info("Verified ")
-                    }
-                } catch (error) {
-                    logger.log("Error occurred while checking numbers: %o", error);
-                    notifyWrongMessageFormat(channel, message.author.id);
-                    deleteMessage(message);
-                }
+                verifyNewlyPostedNumber(messages, channel, message);
             })
             .catch(error => logger.error("Error while fetching last channel messages: %o", error))
     }
