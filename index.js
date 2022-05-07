@@ -3,12 +3,13 @@ const Discord = require('discord.js');
 const client = new Discord.Client({intents: ["GUILDS", "GUILD_MESSAGES"]});
 const logger = require('loglevel');
 
-logger.setLevel(process.env.LOG_LEVEL);
-
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
-const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT;
+const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 5;
 const WRONG_INCREMENT_MESSAGE = process.env.BOT_WRONG_NUMBER_MESSAGE;
 const WRONG_MESSAGE_CONTENT = process.env.BOT_WRONG_MESSAGE_FORMAT;
+
+logger.setLevel(LOG_LEVEL);
 
 function getChannelId(message) {
     return client.channels.cache.get(message.channelId);
