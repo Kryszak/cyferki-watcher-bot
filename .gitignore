@@ -1,2 +1,4 @@
 /.idea/
 /cyferki-watcher-bot.iml
+.env
+/node_modules/
