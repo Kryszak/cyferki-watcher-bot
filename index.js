@@ -78,15 +78,10 @@ function verifyNewlyPostedNumber(messages, channel, message) {
     }
 }
 
-client.on('ready', () => {
-    logger.info(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', message => {
-    logger.trace("message sent by: %o", message.author.username);
+function verifyNewMessage(message) {
     let channel = getChannelId(message);
     if (isSentToWatchedChannel(channel) && isSentFromUser(message)) {
-        logger.info(`Verifying received message to channel ${WATCHED_CHANNEL}`)
+        logger.info(`Verifying received message sent to channel ${WATCHED_CHANNEL} by ${message.author.username}`)
         logger.debug("reading last %o messages", READ_MESSAGES_COUNT);
         getLastMessagesFromWatchedChannel(channel)
             .then(messages => {
@@ -94,6 +89,14 @@ client.on('messageCreate', message => {
             })
             .catch(error => logger.error("Error while fetching last channel messages: %o", error))
     }
+}
+
+client.on('ready', () => {
+    logger.info(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', message => {
+    verifyNewMessage(message);
 });
 
 client.login(process.env.CLIENT_TOKEN);
