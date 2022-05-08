@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Discord = require('discord.js');
 const client = new Discord.Client({intents: ["GUILDS", "GUILD_MESSAGES"]});
-const logger = require('loglevel');
+
 const {notifyWrongNumberProvided, notifyWrongMessageFormat, deleteMessage} = require("./discord/message_sender");
 const {
     isSentToWatchedChannel,
@@ -10,11 +10,10 @@ const {
     extractNumberFromMessage
 } = require("./discord/message_utils");
 const {getLastMessagesFromWatchedChannel} = require("./discord/message_fetcher");
+const {logger} = require("./logging");
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
 const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 20;
-const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-logger.setLevel(LOG_LEVEL);
 
 function getChannelId(message) {
     return client.channels.cache.get(message.channelId);
