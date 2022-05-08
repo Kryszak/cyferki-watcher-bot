@@ -5,7 +5,7 @@ const logger = require('loglevel');
 
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
-const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 5;
+const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 20;
 const WRONG_INCREMENT_MESSAGE = process.env.BOT_WRONG_NUMBER_MESSAGE;
 const WRONG_MESSAGE_CONTENT = process.env.BOT_WRONG_MESSAGE_FORMAT;
 
@@ -37,11 +37,11 @@ function extractNumberFromMessage(currentMessage) {
     if (isNaN(extractedNumber)) {
         throw new Error("Could not extract number from message");
     }
-    return extractedNumber;
+    return parseInt(extractedNumber);
 }
 
 function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
-    return extractNumberFromMessage(currentMessage) - 1 === extractNumberFromMessage(previousMessage.content);
+    return extractNumberFromMessage(currentMessage) - 1 === extractNumberFromMessage(previousMessage);
 }
 
 function deleteMessage(message) {
