@@ -69,7 +69,7 @@ function verifyNewlyPostedNumber(messages, channel, message) {
 function verifyNewMessage(message) {
     let channel = getChannelId(message);
     if (isSentToWatchedChannel(channel) && isSentFromUser(message)) {
-        logger.info(`Verifying received message sent to channel ${WATCHED_CHANNEL} by ${message.author.username}`)
+        logger.info(`Verifying message="${message.content}" sent to channel ${WATCHED_CHANNEL} by ${message.author.username}`)
         getLastMessagesFromWatchedChannel(channel)
             .then(messages => {
                 verifyNewlyPostedNumber(messages, channel, message);
