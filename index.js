@@ -11,6 +11,13 @@ const WRONG_MESSAGE_CONTENT = process.env.BOT_WRONG_MESSAGE_FORMAT;
 
 logger.setLevel(LOG_LEVEL);
 
+// TODO handle rank notifications
+function parseRewardRanks() {
+    let ranks = JSON.parse(process.env.RANKS);
+    logger.debug("Parsed ranks for numbers: %o", ranks);
+    return ranks;
+}
+
 function getChannelId(message) {
     return client.channels.cache.get(message.channelId);
 }
@@ -31,13 +38,16 @@ function extractLastMessagesFromResponse(messages, count) {
     return Array.from(messages.reverse().filter(msg => !msg.author.bot).values()).slice(-count);
 }
 
-function extractNumberFromMessage(currentMessage) {
-    let extractedNumber = currentMessage.content.split(" ")[0];
-    logger.debug("Extracted: %o", extractedNumber);
-    if (isNaN(extractedNumber)) {
+function isContainingNumber(message) {
+    let extractedNumber = message.content.split(" ")[0];
+    return !isNaN(extractedNumber);
+}
+
+function extractNumberFromMessage(message) {
+    if (!isContainingNumber(message)) {
         throw new Error("Could not extract number from message");
     }
-    return parseInt(extractedNumber);
+    return parseInt(message.content.split(" ")[0]);
 }
 
 function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
@@ -58,12 +68,13 @@ function notifyWrongMessageFormat(channel, author) {
     channel.send(`<@${author}> ${WRONG_MESSAGE_CONTENT}`);
 }
 
-function verifyNewlyPostedNumber(messages, channel, message) {
-    let lastMessages = extractLastMessagesFromResponse(messages, 2);
-    let previousMessage = lastMessages[0];
-    let currentMessage = lastMessages[1];
-    logger.debug("Previous message: %o", previousMessage.content);
-    logger.debug("Current message: %o", currentMessage.content);
+function isTheFirstNumberInGame(messages) {
+    let previousMessages = extractLastMessagesFromResponse(messages, READ_MESSAGES_COUNT);
+    let currentMessage = previousMessages.shift();
+    return previousMessages.every(msg => !isContainingNumber(msg) && extractNumberFromMessage(currentMessage) === 1);
+}
+
+function validateNewlyPostedNumber(currentMessage, previousMessage, channel, message) {
     try {
         if (isNewlyPostedNumberCorrect(currentMessage, previousMessage)) {
             logger.info("Verified correctly.")
@@ -77,6 +88,23 @@ function verifyNewlyPostedNumber(messages, channel, message) {
         notifyWrongMessageFormat(channel, message.author.id);
         deleteMessage(message);
     }
+}
+
+function verifyNewlyPostedNumber(messages, channel, message) {
+    let lastMessages = extractLastMessagesFromResponse(messages, 2);
+    if (lastMessages.length < 2) {
+        logger.info("Not enough messages in channel to run the check, msg count=%o", lastMessages.length);
+        return;
+    }
+    if (isTheFirstNumberInGame(messages)) {
+        logger.info("This is the first correct number in game - skipping further checks!")
+        return;
+    }
+    let previousMessage = lastMessages[0];
+    let currentMessage = lastMessages[1];
+    logger.debug("Previous message: %o", previousMessage.content);
+    logger.debug("Current message: %o", currentMessage.content);
+    validateNewlyPostedNumber(currentMessage, previousMessage, channel, message);
 }
 
 function verifyNewMessage(message) {
