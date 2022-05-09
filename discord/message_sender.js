@@ -19,7 +19,7 @@ function notifyPrizedNumber(channel, author, roleId) {
 
 function deleteMessage(message) {
     message.delete()
-        .then(() => logger.log("Successfully removed message: %o", message.content))
+        .then(() => logger.info("Successfully removed message: %o", message.content))
         .catch(error => logger.error("Error while removing message: %o", error))
 }
 
