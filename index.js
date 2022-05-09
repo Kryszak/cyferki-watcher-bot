@@ -2,7 +2,12 @@ require('dotenv').config();
 const Discord = require('discord.js');
 const client = new Discord.Client({intents: ["GUILDS", "GUILD_MESSAGES"]});
 
-const {notifyWrongNumberProvided, notifyWrongMessageFormat, deleteMessage} = require("./discord/message_sender");
+const {
+    notifyWrongNumberProvided,
+    notifyWrongMessageFormat,
+    deleteMessage,
+    notifyPrizedNumber
+} = require("./discord/message_sender");
 const {
     isSentToWatchedChannel,
     isSentFromUser,
@@ -11,9 +16,15 @@ const {
 } = require("./discord/message_utils");
 const {getLastMessagesFromWatchedChannel} = require("./discord/message_fetcher");
 const {logger} = require("./logging");
+const {addRoleToUser} = require("./discord/role_adder");
+
+function loadPrizedNumbers() {
+    return JSON.parse(process.env.RANKS);
+}
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
 const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 20;
+const prizedNumbers = loadPrizedNumbers()
 
 function getChannelId(message) {
     return client.channels.cache.get(message.channelId);
@@ -27,17 +38,31 @@ function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
     return extractNumberFromMessage(currentMessage) - 1 === extractNumberFromMessage(previousMessage);
 }
 
+function checkIfPrizedNumberWasPosted(message) {
+    try {
+        let number = extractNumberFromMessage(message);
+        if (number in prizedNumbers) {
+            let wonRoleId = prizedNumbers[number];
+            notifyPrizedNumber(message.channel, message.author.id, wonRoleId);
+            addRoleToUser(message, wonRoleId)
+        }
+    } catch (error) {
+        logger.error(`Error while processing prizes: ${error.message}`)
+    }
+}
+
 function validateNewlyPostedNumber(currentMessage, previousMessage, channel, message) {
     try {
         if (isNewlyPostedNumberCorrect(currentMessage, previousMessage)) {
             logger.info("Verified correctly.")
+            checkIfPrizedNumberWasPosted(message);
         } else {
             logger.info("Verification failed.")
             notifyWrongNumberProvided(channel, message.author.id);
             deleteMessage(message);
         }
     } catch (error) {
-        logger.error("Error occurred while checking numbers: %o", error);
+        logger.error(`Error occurred while checking numbers: ${error.message}`);
         notifyWrongMessageFormat(channel, message.author.id);
         deleteMessage(message);
     }
@@ -74,7 +99,7 @@ function verifyNewMessage(message) {
             .then(messages => {
                 verifyNewlyPostedNumber(messages, channel, message);
             })
-            .catch(error => logger.error("Error while fetching last channel messages: %o", error))
+            .catch(error => logger.error("Error while fetching last channel messages:", error))
     }
 }
 
@@ -88,4 +113,4 @@ client.on('messageCreate', message => {
 
 client.login(process.env.CLIENT_TOKEN)
     .then(() => logger.info("Client loggged in!"))
-    .catch(error => logger.error("Failed to login bot: %o", error));
+    .catch(error => logger.error("Failed to login bot:", error));

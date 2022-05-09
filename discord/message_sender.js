@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const WRONG_INCREMENT_MESSAGE = process.env.BOT_WRONG_NUMBER_MESSAGE;
 const WRONG_MESSAGE_CONTENT = process.env.BOT_WRONG_MESSAGE_FORMAT;
+const RANK_WON_MESSAGE_CONTENT = process.env.BOT_RANK_WON_MESSAGE;
 
 function notifyWrongNumberProvided(channel, author) {
     channel.send(`<@${author}> ${WRONG_INCREMENT_MESSAGE}`);
@@ -10,6 +11,10 @@ function notifyWrongNumberProvided(channel, author) {
 
 function notifyWrongMessageFormat(channel, author) {
     channel.send(`<@${author}> ${WRONG_MESSAGE_CONTENT}`);
+}
+
+function notifyPrizedNumber(channel, author, roleId) {
+    channel.send(`<@${author}>, ${RANK_WON_MESSAGE_CONTENT} <@&${roleId}>!`);
 }
 
 function deleteMessage(message) {
@@ -21,5 +26,6 @@ function deleteMessage(message) {
 module.exports = {
     notifyWrongNumberProvided: notifyWrongNumberProvided,
     notifyWrongMessageFormat: notifyWrongMessageFormat,
+    notifyPrizedNumber: notifyPrizedNumber,
     deleteMessage: deleteMessage
 }

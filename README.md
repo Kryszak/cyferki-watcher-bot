@@ -1,7 +1,13 @@
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
 
-## loca dev config
+## Required bot user permissions
+- Manage Roles
+- Read Messages/View Channels
+- Send Messages
+- Manage Messages
+
+## local dev config
 In main project directory create `.env` file with following contents:
 ```
 CLIENT_TOKEN=<token_bota>
