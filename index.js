@@ -62,7 +62,6 @@ function handlePrizedNumberPosted(number, lastMessage) {
 }
 
 function handleGameOver(channel) {
-    // TODO wait for message to be sent
     new Promise(resolve => {
         setTimeout(resolve.bind(null, notifyGameOver(channel)), 5000);
     }).then(() => {
