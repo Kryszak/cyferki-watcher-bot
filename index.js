@@ -62,6 +62,7 @@ function handlePrizedNumberPosted(number, lastMessage) {
 }
 
 function handleGameOver(channel) {
+    // TODO wait for message to be sent
     notifyGameOver(channel);
     channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
         SEND_MESSAGES: false

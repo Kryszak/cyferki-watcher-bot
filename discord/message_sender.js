@@ -19,7 +19,7 @@ function notifyPrizedNumber(channel, author, roleId) {
 }
 
 function notifyGameOver(channel) {
-    channel.send(GAME_OVER_MESSAGE_CONTENT)
+    channel.send(GAME_OVER_MESSAGE_CONTENT);
 }
 
 function deleteMessage(message) {
