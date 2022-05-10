@@ -6,10 +6,9 @@ const {
     notifyWrongNumberProvided,
     notifyWrongMessageFormat,
     deleteMessage,
-    notifyPrizedNumber
+    notifyPrizedNumber, notifyGameOver
 } = require("./discord/message_sender");
 const {
-    isSentToWatchedChannel,
     isSentFromUser,
     isContainingNumber,
     extractNumberFromMessage
@@ -17,89 +16,118 @@ const {
 const {getLastMessagesFromWatchedChannel} = require("./discord/message_fetcher");
 const {logger} = require("./logging");
 const {addRoleToUser} = require("./discord/role_adder");
+const {getChannelId, isSentToWatchedChannel} = require("./discord/channel_utils");
 
 function loadPrizedNumbers() {
     return JSON.parse(process.env.RANKS);
 }
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
-const READ_MESSAGES_COUNT = process.env.MESSAGE_READ_COUNT || 20;
-const prizedNumbers = loadPrizedNumbers()
+const GAMEOVER_NUMBER = parseInt(process.env.GAMEOVER_NUMBER);
+const PRIZED_NUMBERS = loadPrizedNumbers()
 
-function getChannelId(message) {
-    return client.channels.cache.get(message.channelId);
-}
+const WRONG_MESSAGE_FORMAT_ERROR = Error("WRONG_MESSAGE_FORMAT");
+const WRONG_NUMBER_POSTED_ERROR = Error("WRONG_NUMBER");
 
-function extractLastMessagesFromResponse(messages, count) {
+function extractLastMessagesFrom(messages, count) {
     return Array.from(messages.reverse().filter(msg => !msg.author.bot).values()).slice(-count);
 }
 
-function isNewlyPostedNumberCorrect(currentMessage, previousMessage) {
-    return extractNumberFromMessage(currentMessage) - 1 === extractNumberFromMessage(previousMessage);
-}
-
-function checkIfPrizedNumberWasPosted(message) {
-    try {
-        let number = extractNumberFromMessage(message);
-        if (number in prizedNumbers) {
-            let wonRoleId = prizedNumbers[number];
-            notifyPrizedNumber(message.channel, message.author.id, wonRoleId);
-            addRoleToUser(message, wonRoleId)
-        }
-    } catch (error) {
-        logger.error(`Error while processing prizes: ${error.message}`)
+function extractNumbersForChecks(messages) {
+    let lastMessages = extractLastMessagesFrom(messages, 2);
+    return {
+        "previousNumber": extractNumberFromMessage(lastMessages[0]),
+        "currentNumber": extractNumberFromMessage(lastMessages[1]),
     }
 }
 
-function validateNewlyPostedNumber(currentMessage, previousMessage, channel, message) {
-    try {
-        if (isNewlyPostedNumberCorrect(currentMessage, previousMessage)) {
-            logger.info("Verified correctly.")
-            checkIfPrizedNumberWasPosted(message);
+function isNewlyPostedNumberCorrect(checkedNumbers) {
+    return checkedNumbers.currentNumber - 1 === checkedNumbers.previousNumber;
+}
+
+function handleWrongMessageFormat(channel, lastMessage) {
+    notifyWrongMessageFormat(channel, lastMessage.author.id);
+    deleteMessage(lastMessage);
+}
+
+function handleWrongNumber(channel, lastMessage) {
+    notifyWrongNumberProvided(channel, lastMessage.author.id);
+    deleteMessage(lastMessage);
+}
+
+function handlePrizedNumberPosted(number, lastMessage) {
+    let wonRoleId = PRIZED_NUMBERS[number];
+    notifyPrizedNumber(lastMessage.channel, lastMessage.author.id, wonRoleId);
+    addRoleToUser(lastMessage, wonRoleId);
+}
+
+function handleGameOver(channel) {
+    notifyGameOver(channel);
+    channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
+        SEND_MESSAGES: false
+    }).then(() => logger.info("Channel locked after game."))
+        .catch(error => logger.error("Failed to lock channel.", error));
+}
+
+function verifySentMessage(lastMessage, messages) {
+    let checkedNumbers = extractNumbersForChecks(messages);
+    if (isNaN(checkedNumbers.previousNumber) && isNaN(checkedNumbers.currentNumber)) {
+        if (messages.every(msg => !isContainingNumber(msg))) {
+            logger.info("Skipping further validation as counting doesn't start yet");
+            return;
         } else {
-            logger.info("Verification failed.")
-            notifyWrongNumberProvided(channel, message.author.id);
-            deleteMessage(message);
+            logger.error("Something really bad happen: two messages without numbers when there are other numbers in channel!");
+            throw WRONG_MESSAGE_FORMAT_ERROR;
         }
+    }
+    if (isNaN(checkedNumbers.previousNumber) && checkedNumbers.currentNumber !== 1) {
+        logger.error(`${lastMessage.author.name} tried to start game with value higher than 1!`);
+        throw WRONG_NUMBER_POSTED_ERROR;
+    }
+    if (isNaN(checkedNumbers.currentNumber)) {
+        logger.error(`${lastMessage.author.name} send message not starting with number.`)
+        throw WRONG_MESSAGE_FORMAT_ERROR;
+    }
+    if (!isNaN(checkedNumbers.previousNumber) && !isNewlyPostedNumberCorrect(checkedNumbers)) {
+        throw WRONG_NUMBER_POSTED_ERROR;
+    }
+    if (checkedNumbers.currentNumber in PRIZED_NUMBERS) {
+        handlePrizedNumberPosted(checkedNumbers.currentNumber, lastMessage);
+    }
+    logger.info(" checking game over: %o", checkedNumbers.currentNumber === GAMEOVER_NUMBER)
+    if (checkedNumbers.currentNumber === GAMEOVER_NUMBER) {
+        handleGameOver(lastMessage.channel);
+    }
+}
+
+function tryMessageVerifications(lastMessage, messages, channel) {
+    try {
+        verifySentMessage(lastMessage, messages);
     } catch (error) {
-        logger.error(`Error occurred while checking numbers: ${error.message}`);
-        notifyWrongMessageFormat(channel, message.author.id);
-        deleteMessage(message);
+        switch (error) {
+            case WRONG_MESSAGE_FORMAT_ERROR:
+                handleWrongMessageFormat(channel, lastMessage);
+                break;
+            case WRONG_NUMBER_POSTED_ERROR:
+                handleWrongNumber(channel, lastMessage);
+                break;
+            default:
+                logger.error("Unknown error occurred: ", error);
+                break;
+        }
     }
 }
 
-function isTheFirstNumberInGame(messages) {
-    let previousMessages = extractLastMessagesFromResponse(messages, READ_MESSAGES_COUNT);
-    let currentMessage = previousMessages.shift();
-    return previousMessages.every(msg => !isContainingNumber(msg) && extractNumberFromMessage(currentMessage) === 1);
-}
-
-function verifyNewlyPostedNumber(messages, channel, message) {
-    let lastMessages = extractLastMessagesFromResponse(messages, 2);
-    if (lastMessages.length < 2) {
-        logger.info("Not enough messages in channel to run the check, msg count=%o", lastMessages.length);
-        return;
-    }
-    if (isTheFirstNumberInGame(messages)) {
-        logger.info("This is the first correct number in game - skipping further checks!")
-        return;
-    }
-    let previousMessage = lastMessages[0];
-    let currentMessage = lastMessages[1];
-    logger.debug("Previous message: %o", previousMessage.content);
-    logger.debug("Current message: %o", currentMessage.content);
-    validateNewlyPostedNumber(currentMessage, previousMessage, channel, message);
-}
-
-function verifyNewMessage(message) {
-    let channel = getChannelId(message);
-    if (isSentToWatchedChannel(channel) && isSentFromUser(message)) {
-        logger.info(`Verifying message="${message.content}" sent to channel ${WATCHED_CHANNEL} by ${message.author.username}`)
+function verifyNewMessage(lastMessage) {
+    let channel = getChannelId(client, lastMessage);
+    if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
+        logger.info(`Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`)
         getLastMessagesFromWatchedChannel(channel)
             .then(messages => {
-                verifyNewlyPostedNumber(messages, channel, message);
+                tryMessageVerifications(lastMessage, messages, channel);
             })
             .catch(error => logger.error("Error while fetching last channel messages:", error))
+            .finally(() => logger.info(`Finished verification of message=${lastMessage.content}`))
     }
 }
 
@@ -112,5 +140,5 @@ client.on('messageCreate', message => {
 });
 
 client.login(process.env.CLIENT_TOKEN)
-    .then(() => logger.info("Client loggged in!"))
+    .then(() => logger.info("Client logged in!"))
     .catch(error => logger.error("Failed to login bot:", error));
