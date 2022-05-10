@@ -16,7 +16,7 @@ const {
 const {getLastMessagesFromWatchedChannel} = require("./discord/message_fetcher");
 const {logger} = require("./logging");
 const {addRoleToUser} = require("./discord/role_adder");
-const {getChannelId, isSentToWatchedChannel} = require("./discord/channel_utils");
+const {getChannelId, isSentToWatchedChannel, removeSendMessagePermissions} = require("./discord/channel_utils");
 
 function loadPrizedNumbers() {
     return JSON.parse(process.env.RANKS);
@@ -63,11 +63,11 @@ function handlePrizedNumberPosted(number, lastMessage) {
 
 function handleGameOver(channel) {
     // TODO wait for message to be sent
-    notifyGameOver(channel);
-    channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-        SEND_MESSAGES: false
-    }).then(() => logger.info("Channel locked after game."))
-        .catch(error => logger.error("Failed to lock channel.", error));
+    new Promise(resolve => {
+        setTimeout(resolve.bind(null, notifyGameOver(channel)), 5000);
+    }).then(() => {
+        removeSendMessagePermissions(channel);
+    });
 }
 
 function verifySentMessage(lastMessage, messages) {
@@ -95,7 +95,6 @@ function verifySentMessage(lastMessage, messages) {
     if (checkedNumbers.currentNumber in PRIZED_NUMBERS) {
         handlePrizedNumberPosted(checkedNumbers.currentNumber, lastMessage);
     }
-    logger.info(" checking game over: %o", checkedNumbers.currentNumber === GAMEOVER_NUMBER)
     if (checkedNumbers.currentNumber === GAMEOVER_NUMBER) {
         handleGameOver(lastMessage.channel);
     }
