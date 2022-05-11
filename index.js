@@ -35,10 +35,17 @@ function extractLastMessagesFrom(messages, count) {
 
 function extractNumbersForChecks(messages) {
   const lastMessages = extractLastMessagesFrom(messages, 2);
-  return {
-    'previousNumber': extractNumberFromMessage(lastMessages[0]),
-    'currentNumber': extractNumberFromMessage(lastMessages[1]),
-  };
+  if (lastMessages.length < 2) {
+    return {
+      'previousNumber': NaN,
+      'currentNumber': extractNumberFromMessage(lastMessages[0]),
+    };
+  } else {
+    return {
+      'previousNumber': extractNumberFromMessage(lastMessages[0]),
+      'currentNumber': extractNumberFromMessage(lastMessages[1]),
+    };
+  }
 }
 
 function isNewlyPostedNumberCorrect(checkedNumbers) {
@@ -80,7 +87,7 @@ function verifySentMessage(lastMessage, messages) {
       throw WRONG_MESSAGE_FORMAT_ERROR;
     }
   }
-  if ((isNaN(checkedNumbers.previousNumber) || !checkedNumbers.previousNumber) && checkedNumbers.currentNumber !== 1) {
+  if ((isNaN(checkedNumbers.previousNumber)) && checkedNumbers.currentNumber !== 1) {
     logger.error(`[${lastMessage.guild.name} ${lastMessage.author.name}] tried to start game with value higher than 1!`);
     throw WRONG_NUMBER_POSTED_ERROR;
   }
