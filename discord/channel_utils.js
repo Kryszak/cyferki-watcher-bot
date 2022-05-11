@@ -1,26 +1,26 @@
-const {logger} = require("../logging");
+const {logger} = require('../logging');
 require('dotenv').config();
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
 
-function getChannelId(client, message) {
-    return client.channels.cache.get(message.channelId);
+function getChannel(client, message) {
+  return client.channels.cache.get(message.channelId);
 }
 
 function isSentToWatchedChannel(channel) {
-    return channel.name === WATCHED_CHANNEL;
+  return channel.name === WATCHED_CHANNEL;
 }
 
 function removeSendMessagePermissions(channel) {
-    logger.info(`[${channel.guild.name}] Locking channel after finished game.`)
-    channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-        SEND_MESSAGES: false
-    }).then(() => logger.info(`[${channel.guild.name}] Channel locked after finished game.`))
-        .catch(error => logger.error(`[${channel.guild.name}] Failed to lock channel.`, error));
+  logger.info(`[${channel.guild.name}] Locking channel after finished game.`);
+  channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
+    SEND_MESSAGES: false,
+  }).then(() => logger.info(`[${channel.guild.name}] Channel locked after finished game.`))
+      .catch((error) => logger.error(`[${channel.guild.name}] Failed to lock channel.`, error));
 }
 
 module.exports = {
-    getChannelId: getChannelId,
-    isSentToWatchedChannel: isSentToWatchedChannel,
-    removeSendMessagePermissions: removeSendMessagePermissions
-}
+  getChannel: getChannel,
+  isSentToWatchedChannel: isSentToWatchedChannel,
+  removeSendMessagePermissions: removeSendMessagePermissions,
+};

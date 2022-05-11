@@ -4,7 +4,8 @@
   "description": "Discord bot guarding correct order in #cyferki channel game",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint ."
   },
   "author": "kryszak",
   "dependencies": {
@@ -13,5 +14,9 @@
     "dotenv": "^16.0.0",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0"
   }
 }
