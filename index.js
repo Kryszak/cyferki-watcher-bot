@@ -73,19 +73,19 @@ function verifySentMessage(lastMessage, messages) {
     let checkedNumbers = extractNumbersForChecks(messages);
     if (isNaN(checkedNumbers.previousNumber) && isNaN(checkedNumbers.currentNumber)) {
         if (messages.every(msg => !isContainingNumber(msg))) {
-            logger.info("Skipping further validation as counting doesn't start yet");
+            logger.info(`[${lastMessage.guild.name}] Skipping further validation as counting doesn't start yet`);
             return;
         } else {
-            logger.error("Something really bad happen: two messages without numbers when there are other numbers in channel!");
+            logger.error(`[${lastMessage.guild.name}] Something really bad happen: two messages without numbers when there are other numbers in channel!`);
             throw WRONG_MESSAGE_FORMAT_ERROR;
         }
     }
     if (isNaN(checkedNumbers.previousNumber) && checkedNumbers.currentNumber !== 1) {
-        logger.error(`${lastMessage.author.name} tried to start game with value higher than 1!`);
+        logger.error(`[${lastMessage.guild.name} ${lastMessage.author.name}] tried to start game with value higher than 1!`);
         throw WRONG_NUMBER_POSTED_ERROR;
     }
     if (isNaN(checkedNumbers.currentNumber)) {
-        logger.error(`${lastMessage.author.name} send message not starting with number.`)
+        logger.error(`[${lastMessage.guild.name} ${lastMessage.author.name}] send message not starting with number.`)
         throw WRONG_MESSAGE_FORMAT_ERROR;
     }
     if (!isNaN(checkedNumbers.previousNumber) && !isNewlyPostedNumberCorrect(checkedNumbers)) {
@@ -111,7 +111,7 @@ function tryMessageVerifications(lastMessage, messages, channel) {
                 handleWrongNumber(channel, lastMessage);
                 break;
             default:
-                logger.error("Unknown error occurred: ", error);
+                logger.error(`[${lastMessage.guild.name}] Unknown error occurred: `, error);
                 break;
         }
     }
@@ -120,13 +120,13 @@ function tryMessageVerifications(lastMessage, messages, channel) {
 function verifyNewMessage(lastMessage) {
     let channel = getChannelId(client, lastMessage);
     if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
-        logger.info(`Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`)
+        logger.info(`[${lastMessage.guild.name}] Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`)
         getLastMessagesFromWatchedChannel(channel)
             .then(messages => {
                 tryMessageVerifications(lastMessage, messages, channel);
             })
-            .catch(error => logger.error("Error while fetching last channel messages:", error))
-            .finally(() => logger.info(`Finished verification of message=${lastMessage.content}`))
+            .catch(error => logger.error(`[${lastMessage.guild.name}] Error while fetching last channel messages:`, error))
+            .finally(() => logger.info(`[${lastMessage.guild.name}] Finished verification of message=${lastMessage.content}`))
     }
 }
 

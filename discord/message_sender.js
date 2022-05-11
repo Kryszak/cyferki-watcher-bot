@@ -24,8 +24,8 @@ function notifyGameOver(channel) {
 
 function deleteMessage(message) {
     message.delete()
-        .then(() => logger.info("Successfully removed message: %o", message.content))
-        .catch(error => logger.error("Error while removing message: %o", error))
+        .then(() => logger.info(`[${message.guild.name}] Successfully removed message: %o`, message.content))
+        .catch(error => logger.error(`[${message.guild.name}] Error while removing message: %o`, error))
 }
 
 module.exports = {
