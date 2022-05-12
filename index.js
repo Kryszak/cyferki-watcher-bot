@@ -22,6 +22,17 @@ function loadPrizedNumbers() {
   return JSON.parse(process.env.RANKS);
 }
 
+function printRolesGrantedForNumberOnServer(server) {
+  logger.debug(`[${server.name}] REWARD ROLES FOR NUMBERS >>`);
+  Object.entries(PRIZED_NUMBERS).forEach((entry) => {
+    const role = server.roles.cache.get(entry[1]);
+    if (role) {
+      logger.debug(`${entry[0]}: '${role.name}'`);
+    }
+  });
+  logger.debug(`[${server.name}] REWARD ROLES FOR NUMBERS <<`);
+}
+
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
 const GAMEOVER_NUMBER = parseInt(process.env.GAMEOVER_NUMBER);
 const PRIZED_NUMBERS = loadPrizedNumbers();
@@ -139,6 +150,7 @@ function verifyNewMessage(lastMessage) {
 
 client.on('ready', () => {
   logger.info(`Logged in as ${client.user.tag}!`);
+  client.guilds.cache.forEach((server) => printRolesGrantedForNumberOnServer(server));
 });
 
 client.on('messageCreate', (message) => {
