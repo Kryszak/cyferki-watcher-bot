@@ -150,7 +150,7 @@ function verifyNewMessage(lastMessage) {
 
 client.on('ready', () => {
   logger.info(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('cyferki', { type: 'WATCHING'});
+  client.user.setActivity('grę w cyferki', { type: 'WATCHING'});
   client.guilds.cache.forEach((server) => printRolesGrantedForNumberOnServer(server));
 });
 
