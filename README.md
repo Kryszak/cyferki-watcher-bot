@@ -2,7 +2,7 @@
 Discord bot guarding rules of game "cyferki" in given channel
 
 ## Required bot user permissions
-- Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work
+- Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work ⚠️
 - Read Messages/View Channels
 - Send Messages
 - Manage Messages
