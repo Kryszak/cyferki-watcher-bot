@@ -21,3 +21,6 @@ BOT_GAME_OVER_MESSAGE=<Wiadomość wysyłana na koniec gry, np Koniec gry! Dzię
 RANKS=<JSON with number - rankId entries, np {"10": "973271221112291409", "15": "973282436047839262"}> 
 GAMEOVER_NUMBER=<numerek kończący grę>
 ```
+
+## Possible new features
+- Block editing messages
