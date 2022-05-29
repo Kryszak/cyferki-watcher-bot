@@ -45,18 +45,7 @@ function extractLastMessagesFrom(messages, count) {
 }
 
 function extractNumbersForChecks(messages) {
-  const lastMessages = extractLastMessagesFrom(messages, 2);
-  if (lastMessages.length < 2) {
-    return {
-      'previousNumber': NaN,
-      'currentNumber': extractNumberFromMessage(lastMessages[0]),
-    };
-  } else {
-    return {
-      'previousNumber': extractNumberFromMessage(lastMessages[0]),
-      'currentNumber': extractNumberFromMessage(lastMessages[1]),
-    };
-  }
+  return extractLastMessagesFrom(messages, 10).map((message) => extractNumberFromMessage(message));
 }
 
 function isNewlyPostedNumberCorrect(checkedNumbers) {
@@ -87,9 +76,32 @@ function handleGameOver(channel) {
   });
 }
 
+function handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages) {
+  // TODO turn this on when ready
+  if (false) {
+    logger.debug(`[${lastMessage.guild.name}] last two numbers are the same, checking further`);
+    logger.debug(`messages: ${checkedNumbers}`);
+    const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
+    logger.debug(`last valid number: ${previousValidNumber}`);
+    const duplicatedMessages = Array.from(messages.filter((msg) => !msg.author.bot && msg.content.includes(lastTwoNumbers.currentNumber)).values());
+    duplicatedMessages.shift();
+    duplicatedMessages.forEach((msg) => {
+      if (msg.content.includes(lastTwoNumbers.currentNumber)) {
+        // TODO send message about duplicate
+        deleteMessage(msg);
+      }
+    });
+    lastTwoNumbers['previousNumber'] = previousValidNumber;
+  }
+}
+
 function verifySentMessage(lastMessage, messages) {
   const checkedNumbers = extractNumbersForChecks(messages);
-  if (isNaN(checkedNumbers.previousNumber) && isNaN(checkedNumbers.currentNumber)) {
+  const lastTwoNumbers = {
+    'previousNumber': checkedNumbers[checkedNumbers.length - 2],
+    'currentNumber': checkedNumbers[checkedNumbers.length - 1],
+  };
+  if (isNaN(lastTwoNumbers.previousNumber) && isNaN(lastTwoNumbers.currentNumber)) {
     if (messages.every((msg) => !isContainingNumber(msg))) {
       logger.info(`[${lastMessage.guild.name}] Skipping further validation as counting doesn't start yet`);
       return;
@@ -98,21 +110,24 @@ function verifySentMessage(lastMessage, messages) {
       throw WRONG_MESSAGE_FORMAT_ERROR;
     }
   }
-  if ((isNaN(checkedNumbers.previousNumber)) && checkedNumbers.currentNumber !== 1) {
+  if ((isNaN(lastTwoNumbers.previousNumber)) && lastTwoNumbers.currentNumber !== 1) {
     logger.error(`[${lastMessage.guild.name} ${lastMessage.author.name}] tried to start game with value higher than 1!`);
     throw WRONG_NUMBER_POSTED_ERROR;
   }
-  if (isNaN(checkedNumbers.currentNumber)) {
+  if (isNaN(lastTwoNumbers.currentNumber)) {
     logger.error(`[${lastMessage.guild.name}] ${lastMessage.author.name} sent message not starting with number.`);
     throw WRONG_MESSAGE_FORMAT_ERROR;
   }
-  if (!isNaN(checkedNumbers.previousNumber) && !isNewlyPostedNumberCorrect(checkedNumbers)) {
+  if (lastTwoNumbers.previousNumber === lastTwoNumbers.currentNumber) {
+    handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages);
+  }
+  if (!isNaN(lastTwoNumbers.previousNumber) && !isNewlyPostedNumberCorrect(lastTwoNumbers)) {
     throw WRONG_NUMBER_POSTED_ERROR;
   }
-  if (checkedNumbers.currentNumber in PRIZED_NUMBERS) {
-    handlePrizedNumberPosted(checkedNumbers.currentNumber, lastMessage);
+  if (lastTwoNumbers.currentNumber in PRIZED_NUMBERS) {
+    handlePrizedNumberPosted(lastTwoNumbers.currentNumber, lastMessage);
   }
-  if (checkedNumbers.currentNumber === GAMEOVER_NUMBER) {
+  if (lastTwoNumbers.currentNumber === GAMEOVER_NUMBER) {
     handleGameOver(lastMessage.channel);
   }
 }
@@ -139,6 +154,7 @@ function verifyNewMessage(lastMessage) {
   const channel = getChannel(client, lastMessage);
   if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
     logger.info(`[${lastMessage.guild.name}] Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
+    // TODO introduce wait time ?
     getLastMessagesFromWatchedChannel(channel)
         .then((messages) => {
           tryMessageVerifications(lastMessage, messages, channel);
