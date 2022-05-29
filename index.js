@@ -11,11 +11,11 @@ const {
 const {
   isSentFromUser,
   isContainingNumber,
-  extractNumberFromMessage,
+  extractNumberFromMessage, fetchMessage,
 } = require('./discord/message_utils');
 const {getLastMessagesFromWatchedChannel} = require('./discord/message_fetcher');
 const {logger} = require('./logging');
-const {addRoleToUser} = require('./discord/role_adder');
+const {addRoleToUser, hasRole} = require('./discord/role_manager');
 const {getChannel, isSentToWatchedChannel, removeSendMessagePermissions} = require('./discord/channel_utils');
 
 function loadPrizedNumbers() {
@@ -41,7 +41,11 @@ const WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
 const WRONG_NUMBER_POSTED_ERROR = Error('WRONG_NUMBER');
 
 function extractLastMessagesFrom(messages, count) {
-  return Array.from(messages.reverse().filter((msg) => !msg.author.bot).values()).slice(-count);
+  return Array.from(messages.reverse().filter((msg) => isSentFromUser(msg)).values()).slice(-count);
+}
+
+function getDuplicatedNumbers(messages, currentNumber) {
+  return Array.from(messages.filter((msg) => isSentFromUser(msg) && msg.content.includes(currentNumber)).values());
 }
 
 function extractNumbersForChecks(messages) {
@@ -58,14 +62,20 @@ function handleWrongMessageFormat(channel, lastMessage) {
 }
 
 function handleWrongNumber(channel, lastMessage) {
-  notifyWrongNumberProvided(channel, lastMessage.author.id);
-  deleteMessage(lastMessage);
+  fetchMessage(lastMessage).then(() => {
+    notifyWrongNumberProvided(channel, lastMessage.author.id);
+    deleteMessage(lastMessage);
+  });
 }
 
 function handlePrizedNumberPosted(number, lastMessage) {
   const wonRoleId = PRIZED_NUMBERS[number];
-  notifyPrizedNumber(lastMessage.channel, lastMessage.author.id, wonRoleId);
-  addRoleToUser(lastMessage, wonRoleId);
+  if (!hasRole(lastMessage.member, wonRoleId)) {
+    fetchMessage(lastMessage).then(() => {
+      notifyPrizedNumber(lastMessage.channel, lastMessage.author.id, wonRoleId);
+      addRoleToUser(lastMessage, wonRoleId);
+    });
+  }
 }
 
 function handleGameOver(channel) {
@@ -80,16 +90,14 @@ function handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumber
   logger.debug(`[${lastMessage.guild.name}] last two numbers are the same, checking further`);
   const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
   logger.debug(`[${lastMessage.guild.name}] last valid number: ${previousValidNumber}`);
-  const duplicatedMessages = Array.from(messages.filter((msg) => !msg.author.bot && msg.content.includes(lastTwoNumbers.currentNumber)).values());
-  duplicatedMessages.shift();
+  const duplicatedMessages = getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
+  lastMessage = duplicatedMessages.shift();
   duplicatedMessages.forEach((msg) => {
-    if (msg.content.includes(lastTwoNumbers.currentNumber)) {
-      // TODO separate message for duplicate?
-      handleWrongNumber(msg.channel, msg);
-      deleteMessage(msg);
-    }
+    handleWrongNumber(msg.channel, msg);
+    deleteMessage(msg);
   });
   lastTwoNumbers['previousNumber'] = previousValidNumber;
+  return lastMessage;
 }
 
 function verifySentMessage(lastMessage, messages) {
@@ -116,13 +124,15 @@ function verifySentMessage(lastMessage, messages) {
     throw WRONG_MESSAGE_FORMAT_ERROR;
   }
   if (lastTwoNumbers.previousNumber === lastTwoNumbers.currentNumber) {
-    handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages);
+    lastMessage = handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages);
   }
   if (!isNaN(lastTwoNumbers.previousNumber) && !isNewlyPostedNumberCorrect(lastTwoNumbers)) {
     throw WRONG_NUMBER_POSTED_ERROR;
   }
   if (lastTwoNumbers.currentNumber in PRIZED_NUMBERS) {
-    handlePrizedNumberPosted(lastTwoNumbers.currentNumber, lastMessage);
+    fetchMessage(lastMessage).then(() => {
+      handlePrizedNumberPosted(lastTwoNumbers.currentNumber, lastMessage);
+    });
   }
   if (lastTwoNumbers.currentNumber === GAMEOVER_NUMBER) {
     handleGameOver(lastMessage.channel);
@@ -151,7 +161,6 @@ function verifyNewMessage(lastMessage) {
   const channel = getChannel(client, lastMessage);
   if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
     logger.info(`[${lastMessage.guild.name}] Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
-    // TODO introduce wait time ?
     getLastMessagesFromWatchedChannel(channel)
         .then((messages) => {
           tryMessageVerifications(lastMessage, messages, channel);

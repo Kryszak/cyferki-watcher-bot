@@ -14,8 +14,13 @@ function extractNumberFromMessage(message) {
   }
 }
 
+function fetchMessage(message) {
+  return message.channel.messages.fetch(message.id);
+}
+
 module.exports = {
   isSentFromUser: isSentFromUser,
   isContainingNumber: isContainingNumber,
   extractNumberFromMessage: extractNumberFromMessage,
+  fetchMessage: fetchMessage,
 };

@@ -10,6 +10,11 @@ function addRoleToUser(message, roleId) {
   }
 }
 
+function hasRole(member, roleId) {
+  return member.roles.cache.find((role) => role.id === roleId);
+}
+
 module.exports = {
   addRoleToUser: addRoleToUser,
+  hasRole: hasRole,
 };
