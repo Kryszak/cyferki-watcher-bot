@@ -77,22 +77,19 @@ function handleGameOver(channel) {
 }
 
 function handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages) {
-  // TODO turn this on when ready
-  if (false) {
-    logger.debug(`[${lastMessage.guild.name}] last two numbers are the same, checking further`);
-    logger.debug(`messages: ${checkedNumbers}`);
-    const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
-    logger.debug(`last valid number: ${previousValidNumber}`);
-    const duplicatedMessages = Array.from(messages.filter((msg) => !msg.author.bot && msg.content.includes(lastTwoNumbers.currentNumber)).values());
-    duplicatedMessages.shift();
-    duplicatedMessages.forEach((msg) => {
-      if (msg.content.includes(lastTwoNumbers.currentNumber)) {
-        // TODO send message about duplicate
-        deleteMessage(msg);
-      }
-    });
-    lastTwoNumbers['previousNumber'] = previousValidNumber;
-  }
+  logger.debug(`[${lastMessage.guild.name}] last two numbers are the same, checking further`);
+  const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
+  logger.debug(`[${lastMessage.guild.name}] last valid number: ${previousValidNumber}`);
+  const duplicatedMessages = Array.from(messages.filter((msg) => !msg.author.bot && msg.content.includes(lastTwoNumbers.currentNumber)).values());
+  duplicatedMessages.shift();
+  duplicatedMessages.forEach((msg) => {
+    if (msg.content.includes(lastTwoNumbers.currentNumber)) {
+      // TODO separate message for duplicate?
+      handleWrongNumber(msg.channel, msg);
+      deleteMessage(msg);
+    }
+  });
+  lastTwoNumbers['previousNumber'] = previousValidNumber;
 }
 
 function verifySentMessage(lastMessage, messages) {
@@ -160,7 +157,7 @@ function verifyNewMessage(lastMessage) {
           tryMessageVerifications(lastMessage, messages, channel);
         })
         .catch((error) => logger.error(`[${lastMessage.guild.name}] Error while fetching last channel messages:`, error))
-        .finally(() => logger.info(`[${lastMessage.guild.name}] Finished verification of message="${lastMessage.content}"`));
+        .finally(() => logger.info(`[${lastMessage.guild.name}] Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
   }
 }
 
