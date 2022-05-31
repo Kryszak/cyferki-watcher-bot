@@ -1,4 +1,4 @@
-const logger = require('loglevel');
+const {getLogger} = require('../logging/logging');
 require('dotenv').config();
 
 const WRONG_INCREMENT_MESSAGE = process.env.BOT_WRONG_NUMBER_MESSAGE;
@@ -23,12 +23,13 @@ function notifyGameOver(channel) {
 }
 
 function deleteMessage(message) {
-  logger.info(`[${message.guild.name}] removing message from ${message.author.username}: ${message.content}`);
+  const logger = getLogger(message.guild.name);
+  logger.info(`Removing message from ${message.author.username}: ${message.content}`);
   message.delete()
-      .then(() => logger.info(`[${message.guild.name}] Successfully removed message: ${message.content} from ${message.author.username}`))
+      .then(() => logger.info(`Successfully removed message: ${message.content} from ${message.author.username}`))
       .catch((error) => {
         if (error.httpStatus !== 404) {
-          logger.error(`[${message.guild.name}] Error while removing message: %o`, error);
+          logger.error('Error while removing message: %o', error);
         }
       });
 }

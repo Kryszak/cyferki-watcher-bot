@@ -14,23 +14,27 @@ const {
   extractNumberFromMessage, fetchMessage,
 } = require('./discord/message_utils');
 const {getLastMessagesFromWatchedChannel} = require('./discord/message_fetcher');
-const {logger} = require('./logging');
+const {getLogger} = require('./logging/logging');
 const {addRoleToUser, hasRole} = require('./discord/role_manager');
 const {getChannel, isSentToWatchedChannel, removeSendMessagePermissions} = require('./discord/channel_utils');
+
+const rootLogger = getLogger('root');
+let contextLogger;
 
 function loadPrizedNumbers() {
   return JSON.parse(process.env.RANKS);
 }
 
 function printRolesGrantedForNumberOnServer(server) {
-  logger.debug(`[${server.name}] REWARD ROLES FOR NUMBERS >>`);
+  contextLogger = getLogger(server.name);
+  contextLogger.debug('REWARD ROLES FOR NUMBERS >>');
   Object.entries(PRIZED_NUMBERS).forEach((entry) => {
     const role = server.roles.cache.get(entry[1]);
     if (role) {
-      logger.debug(`${entry[0]}: '${role.name}'`);
+      contextLogger.debug(`${entry[0]}: '${role.name}'`);
     }
   });
-  logger.debug(`[${server.name}] REWARD ROLES FOR NUMBERS <<`);
+  contextLogger.debug('REWARD ROLES FOR NUMBERS <<');
 }
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
@@ -86,18 +90,18 @@ function handleGameOver(channel) {
   });
 }
 
-function handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages) {
-  logger.debug(`[${lastMessage.guild.name}] last two numbers are the same, checking further`);
+function handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages) {
+  contextLogger.debug('Last two numbers are the same, checking further');
   const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
-  logger.debug(`[${lastMessage.guild.name}] last valid number: ${previousValidNumber}`);
+  contextLogger.debug(`Last valid number: ${previousValidNumber}`);
   const duplicatedMessages = getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
-  lastMessage = duplicatedMessages.shift();
+  const correctedLastMessage = duplicatedMessages.shift();
   duplicatedMessages.forEach((msg) => {
     handleWrongNumber(msg.channel, msg);
     deleteMessage(msg);
   });
   lastTwoNumbers['previousNumber'] = previousValidNumber;
-  return lastMessage;
+  return correctedLastMessage;
 }
 
 function verifySentMessage(lastMessage, messages) {
@@ -108,23 +112,23 @@ function verifySentMessage(lastMessage, messages) {
   };
   if (isNaN(lastTwoNumbers.previousNumber) && isNaN(lastTwoNumbers.currentNumber)) {
     if (messages.every((msg) => !isContainingNumber(msg))) {
-      logger.info(`[${lastMessage.guild.name}] Skipping further validation as counting doesn't start yet`);
+      contextLogger.info('Skipping further validation as counting doesn\'t start yet');
       return;
     } else {
-      logger.error(`[${lastMessage.guild.name}] Something really bad happen: two messages without numbers when there are other numbers in channel!`);
+      contextLogger.error('Something really bad happen: two messages without numbers when there are other numbers in channel!');
       throw WRONG_MESSAGE_FORMAT_ERROR;
     }
   }
   if ((isNaN(lastTwoNumbers.previousNumber)) && lastTwoNumbers.currentNumber !== 1) {
-    logger.error(`[${lastMessage.guild.name} ${lastMessage.author.name}] tried to start game with value higher than 1!`);
+    contextLogger.error(`${lastMessage.author.username} tried to start game with value higher than 1!`);
     throw WRONG_NUMBER_POSTED_ERROR;
   }
   if (isNaN(lastTwoNumbers.currentNumber)) {
-    logger.error(`[${lastMessage.guild.name}] ${lastMessage.author.name} sent message not starting with number.`);
+    contextLogger.error(`${lastMessage.author.username} sent message not starting with number.`);
     throw WRONG_MESSAGE_FORMAT_ERROR;
   }
   if (lastTwoNumbers.previousNumber === lastTwoNumbers.currentNumber) {
-    lastMessage = handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumbers, messages);
+    lastMessage = handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages);
   }
   if (!isNaN(lastTwoNumbers.previousNumber) && !isNewlyPostedNumberCorrect(lastTwoNumbers)) {
     throw WRONG_NUMBER_POSTED_ERROR;
@@ -151,27 +155,28 @@ function tryMessageVerifications(lastMessage, messages, channel) {
         handleWrongNumber(channel, lastMessage);
         break;
       default:
-        logger.error(`[${lastMessage.guild.name}] Unknown error occurred: `, error);
+        contextLogger.error('Unknown error occurred: ', error);
         break;
     }
   }
 }
 
 function verifyNewMessage(lastMessage) {
+  contextLogger = getLogger(lastMessage.guild.name);
   const channel = getChannel(client, lastMessage);
   if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
-    logger.info(`[${lastMessage.guild.name}] Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
+    contextLogger.info(`Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
     getLastMessagesFromWatchedChannel(channel)
         .then((messages) => {
           tryMessageVerifications(lastMessage, messages, channel);
         })
-        .catch((error) => logger.error(`[${lastMessage.guild.name}] Error while fetching last channel messages:`, error))
-        .finally(() => logger.info(`[${lastMessage.guild.name}] Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
+        .catch((error) => contextLogger.error('Error while fetching last channel messages:', error))
+        .finally(() => contextLogger.info(`Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
   }
 }
 
 client.on('ready', () => {
-  logger.info(`Logged in as ${client.user.tag}!`);
+  rootLogger.info(`Logged in as ${client.user.tag}!`);
   client.user.setActivity('grę w cyferki', {type: 'WATCHING'});
   client.guilds.cache.forEach((server) => printRolesGrantedForNumberOnServer(server));
 });
@@ -181,5 +186,5 @@ client.on('messageCreate', (message) => {
 });
 
 client.login(process.env.CLIENT_TOKEN)
-    .then(() => logger.info('Client logged in!'))
-    .catch((error) => logger.error('Failed to login bot:', error));
+    .then(() => rootLogger.info('Client logged in!'))
+    .catch((error) => rootLogger.error('Failed to login bot:', error));

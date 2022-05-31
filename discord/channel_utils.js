@@ -1,4 +1,4 @@
-const {logger} = require('../logging');
+const {getLogger} = require('../logging/logging');
 require('dotenv').config();
 
 const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
@@ -12,6 +12,7 @@ function isSentToWatchedChannel(channel) {
 }
 
 function removeSendMessagePermissions(channel) {
+  const logger = getLogger('channel.guild.name');
   logger.info(`[${channel.guild.name}] Locking channel after finished game.`);
   channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
     SEND_MESSAGES: false,
