@@ -93,7 +93,6 @@ function handleDuplicatedLastMessages(lastMessage, checkedNumbers, lastTwoNumber
   const duplicatedMessages = getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
   lastMessage = duplicatedMessages.shift();
   duplicatedMessages.forEach((msg) => {
-    // TODO dedicated duplicate message?
     handleWrongNumber(msg.channel, msg);
     deleteMessage(msg);
   });
