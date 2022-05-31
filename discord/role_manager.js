@@ -1,7 +1,7 @@
 const {getLogger} = require('../logging/logging');
 
 function addRoleToUser(message, roleId) {
-  const logger = getLogger('message.guild.name');
+  const logger = getLogger(message.guild.name);
   logger.info(`Adding roleId=${roleId} to user=${message.author.username}`);
   try {
     message.member.roles.add(roleId);

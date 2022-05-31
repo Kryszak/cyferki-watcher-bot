@@ -12,12 +12,12 @@ function isSentToWatchedChannel(channel) {
 }
 
 function removeSendMessagePermissions(channel) {
-  const logger = getLogger('channel.guild.name');
-  logger.info(`[${channel.guild.name}] Locking channel after finished game.`);
+  const logger = getLogger(channel.guild.name);
+  logger.info('Locking channel after finished game.');
   channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
     SEND_MESSAGES: false,
-  }).then(() => logger.info(`[${channel.guild.name}] Channel locked after finished game.`))
-      .catch((error) => logger.error(`[${channel.guild.name}] Failed to lock channel.`, error));
+  }).then(() => logger.info('Channel locked after finished game.'))
+      .catch((error) => logger.error('Failed to lock channel.', error));
 }
 
 module.exports = {
