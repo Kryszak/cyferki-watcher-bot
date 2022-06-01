@@ -8,6 +8,7 @@ Discord bot guarding rules of game "cyferki" in given channel
 - Manage Messages
 
 ## local dev config
+### Config
 In main project directory create `.env` file with following contents:
 ```
 CLIENT_TOKEN=<token_bota>
@@ -21,6 +22,12 @@ BOT_GAME_OVER_MESSAGE=<Wiadomość wysyłana na koniec gry, np Koniec gry! Dzię
 RANKS=<JSON with number - rankId entries, np {"10": "973271221112291409", "15": "973282436047839262"}> 
 GAMEOVER_NUMBER=<numerek kończący grę>
 ```
+
+### Run project
+```npm run start```
+
+### Run tests
+```npm run test```
 
 ## Possible new features
 - Block editing messages
