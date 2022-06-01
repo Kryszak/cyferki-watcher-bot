@@ -1,7 +1,7 @@
-const {isSentToWatchedChannel, removeSendMessagePermissions, getChannel} = require('../src/discord/channel_utils');
-const globals = require('../src/globals');
+const {isSentToWatchedChannel, removeSendMessagePermissions, getChannel} = require('../../src/discord/channel_utils');
+const globals = require('../../src/globals');
 
-jest.mock('../src/globals');
+jest.mock('../../src/globals');
 
 const channelName = 'watched';
 

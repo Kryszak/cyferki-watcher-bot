@@ -1,13 +1,13 @@
-const globals = require('../src/globals');
+const globals = require('../../src/globals');
 const {
   notifyWrongNumberProvided,
   notifyWrongMessageFormat,
   notifyPrizedNumber,
   notifyGameOver,
   deleteMessage,
-} = require('../src/discord/message_sender');
+} = require('../../src/discord/message_sender');
 
-jest.mock('../src/globals');
+jest.mock('../../src/globals');
 
 beforeAll(() => {
   globals.getWrongIncrementMessage.mockReturnValue('wrongIncrementMsg');

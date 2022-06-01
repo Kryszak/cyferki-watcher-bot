@@ -1,7 +1,7 @@
-const globals = require('../src/globals');
-const {getLastMessagesFromWatchedChannel} = require('../src/discord/message_fetcher');
+const globals = require('../../src/globals');
+const {getLastMessagesFromWatchedChannel} = require('../../src/discord/message_fetcher');
 
-jest.mock('../src/globals');
+jest.mock('../../src/globals');
 
 beforeAll(() => {
   globals.getReadMessagesCount.mockReturnValue(20);
