@@ -3,11 +3,16 @@ const globals = require('../src/globals');
 
 jest.mock('../src/globals');
 
-test('Should return true for watched channel', () => {
-  const channelName = 'watched';
+const channelName = 'watched';
+
+beforeAll(() => {
   globals.getWatchedChannel.mockReturnValue(channelName);
+});
+
+test('Should return true for watched channel', () => {
   const channel = {
-    'name': 'watched',
+    'name': channelName,
   };
+
   expect(isSentToWatchedChannel(channel)).toBeTruthy();
 });
