@@ -1,14 +1,12 @@
 const {getLogger} = require('../logging/logging');
-require('dotenv').config();
-
-const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
+const globals = require('../globals');
 
 function getChannel(client, message) {
   return client.channels.cache.get(message.channelId);
 }
 
 function isSentToWatchedChannel(channel) {
-  return channel.name === WATCHED_CHANNEL;
+  return channel.name === globals.getWatchedChannel();
 }
 
 function removeSendMessagePermissions(channel) {

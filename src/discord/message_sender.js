@@ -1,25 +1,26 @@
 const {getLogger} = require('../logging/logging');
-require('dotenv').config();
+const {
+  getWrongIncrementMessage,
+  getWrongMessageContent,
+  getRankWonMessageContent,
+  getGameOverMessageContent,
+} = require('../globals');
 
-const WRONG_INCREMENT_MESSAGE = process.env.BOT_WRONG_NUMBER_MESSAGE;
-const WRONG_MESSAGE_CONTENT = process.env.BOT_WRONG_MESSAGE_FORMAT;
-const RANK_WON_MESSAGE_CONTENT = process.env.BOT_RANK_WON_MESSAGE;
-const GAME_OVER_MESSAGE_CONTENT = process.env.BOT_GAME_OVER_MESSAGE;
 
 function notifyWrongNumberProvided(channel, authorId) {
-  channel.send(`<@${authorId}> ${WRONG_INCREMENT_MESSAGE}`);
+  channel.send(`<@${authorId}> ${getWrongIncrementMessage()}`);
 }
 
 function notifyWrongMessageFormat(channel, authorId) {
-  channel.send(`<@${authorId}> ${WRONG_MESSAGE_CONTENT}`);
+  channel.send(`<@${authorId}> ${getWrongMessageContent()}`);
 }
 
 function notifyPrizedNumber(channel, authorId, roleId) {
-  channel.send(`<@${authorId}>, ${RANK_WON_MESSAGE_CONTENT} <@&${roleId}>!`);
+  channel.send(`<@${authorId}>, ${getRankWonMessageContent()} <@&${roleId}>!`);
 }
 
 function notifyGameOver(channel) {
-  return channel.send(GAME_OVER_MESSAGE_CONTENT);
+  return channel.send(getGameOverMessageContent());
 }
 
 function deleteMessage(message) {

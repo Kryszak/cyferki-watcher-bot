@@ -1,7 +1,5 @@
-require('dotenv').config();
 const Discord = require('discord.js');
 const client = new Discord.Client({intents: ['GUILDS', 'GUILD_MESSAGES']});
-
 const {
   notifyWrongNumberProvided,
   notifyWrongMessageFormat,
@@ -17,12 +15,13 @@ const {getLastMessagesFromWatchedChannel} = require('./discord/message_fetcher')
 const {getLogger} = require('./logging/logging');
 const {addRoleToUser, hasRole} = require('./discord/role_manager');
 const {getChannel, isSentToWatchedChannel, removeSendMessagePermissions} = require('./discord/channel_utils');
+const {getRanks, getWatchedChannel, getGameoverNumber, getClientToken} = require('./globals');
 
 const rootLogger = getLogger('root');
 let contextLogger;
 
 function loadPrizedNumbers() {
-  return JSON.parse(process.env.RANKS);
+  return getRanks();
 }
 
 function printRolesGrantedForNumberOnServer(server) {
@@ -37,8 +36,8 @@ function printRolesGrantedForNumberOnServer(server) {
   contextLogger.debug('REWARD ROLES FOR NUMBERS <<');
 }
 
-const WATCHED_CHANNEL = process.env.WATCHED_CHANNEL;
-const GAMEOVER_NUMBER = parseInt(process.env.GAMEOVER_NUMBER);
+const WATCHED_CHANNEL = getWatchedChannel();
+const GAMEOVER_NUMBER = getGameoverNumber();
 const PRIZED_NUMBERS = loadPrizedNumbers();
 
 const WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
@@ -185,6 +184,6 @@ client.on('messageCreate', (message) => {
   verifyNewMessage(message);
 });
 
-client.login(process.env.CLIENT_TOKEN)
+client.login(getClientToken())
     .then(() => rootLogger.info('Client logged in!'))
     .catch((error) => rootLogger.error('Failed to login bot:', error));
