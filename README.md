@@ -24,3 +24,4 @@ GAMEOVER_NUMBER=<numerek kończący grę>
 
 ## Possible new features
 - Block editing messages
+- Unit tests
