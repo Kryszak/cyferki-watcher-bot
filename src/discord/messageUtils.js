@@ -9,11 +9,10 @@ function isContainingNumber(message) {
 function extractNumberFromMessage(message) {
   try {
     return parseInt(message.content.split(' ')[0]);
-  } catch (e) {
+  } catch {
     return NaN;
   }
 }
-
 
 module.exports = {
   isSentFromUser: isSentFromUser,

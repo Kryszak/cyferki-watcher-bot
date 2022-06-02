@@ -49,5 +49,5 @@ test('Should return NaN if message doesn\'t contain valid number', () => {
     'content': 'asdf testing incorrect message',
   };
 
-  expect(isNaN(extractNumberFromMessage(message))).toBeTruthy();
+  expect(extractNumberFromMessage(message)).toBeNaN();
 });

@@ -24,6 +24,16 @@ const messageWithoutContent = {
   },
 };
 
+const messageFromBot = {
+  'guild': {
+    'name': 'test guild',
+  },
+  'author': {
+    'bot': true,
+    'username': 'bot user',
+  },
+};
+
 beforeAll(() => {
   globals.getLogLevel.mockReturnValue('debug');
   globals.getReadMessagesCount.mockReturnValue(20);
@@ -165,6 +175,24 @@ test('Verify correct message sent', () => {
   // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '1'}, {...messageWithoutContent, 'content': '2'}, lastMessage,
+  ].reverse();
+
+  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+});
+
+test('Verify correct message sent with previous bot messages', () => {
+  const lastMessage = {
+    ...messageWithoutContent,
+    'content': '3',
+  };
+
+  // discord returns messages in order from last one
+  const messages = [
+    {...messageWithoutContent, 'content': '1'},
+    {...messageFromBot, 'content': 'bot talk'},
+    {...messageWithoutContent, 'content': '2'},
+    {...messageFromBot, 'content': 'another bot talk'},
+    lastMessage,
   ].reverse();
 
   expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
