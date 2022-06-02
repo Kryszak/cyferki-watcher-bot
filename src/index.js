@@ -15,7 +15,7 @@ const {getLastMessagesFromWatchedChannel} = require('./discord/message_fetcher')
 const {getLogger} = require('./logging/logging');
 const {addRoleToUser, hasRole} = require('./discord/role_manager');
 const {getChannel, isSentToWatchedChannel, removeSendMessagePermissions} = require('./discord/channel_utils');
-const {getRanks, getWatchedChannel, getGameoverNumber, getClientToken} = require('./globals');
+const {getRanks, getWatchedChannel, getGameoverNumber, getClientToken, getReadMessagesCount} = require('./globals');
 
 const rootLogger = getLogger('root');
 let contextLogger;
@@ -52,7 +52,7 @@ function getDuplicatedNumbers(messages, currentNumber) {
 }
 
 function extractNumbersForChecks(messages) {
-  return extractLastMessagesFrom(messages, 10).map((message) => extractNumberFromMessage(message));
+  return extractLastMessagesFrom(messages, getReadMessagesCount()).map((message) => extractNumberFromMessage(message));
 }
 
 function isNewlyPostedNumberCorrect(checkedNumbers) {
