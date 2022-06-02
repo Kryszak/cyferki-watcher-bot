@@ -65,6 +65,6 @@ test('Should fetch message', () => {
 
   fetchMessage(message);
 
-  expect(mockedFetch.mock.calls.length).toBe(1);
-  expect(mockedFetch.mock.calls[0][0]).toBe(123);
+  expect(mockedFetch).toHaveBeenCalledTimes(1);
+  expect(mockedFetch).toHaveBeenCalledWith(123);
 });

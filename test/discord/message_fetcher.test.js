@@ -17,6 +17,6 @@ test('Should fetch messages with given limit', () => {
 
   getLastMessagesFromWatchedChannel(channel);
 
-  expect(mockedFetch.mock.calls.length).toBe(1);
-  expect(mockedFetch.mock.calls[0][0]).toStrictEqual({'limit': 20});
+  expect(mockedFetch).toHaveBeenCalledTimes(1);
+  expect(mockedFetch).toHaveBeenCalledWith({'limit': 20});
 });

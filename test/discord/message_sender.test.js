@@ -24,8 +24,8 @@ test('Should send message about wrong number', () => {
 
   notifyWrongNumberProvided(channel, 123456);
 
-  expect(mockedSend.mock.calls.length).toBe(1);
-  expect(mockedSend.mock.calls[0][0]).toBe('<@123456> wrongIncrementMsg');
+  expect(mockedSend).toHaveBeenCalledTimes(1);
+  expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongIncrementMsg');
 });
 
 test('Should send message about wrong message format', () => {
@@ -36,8 +36,8 @@ test('Should send message about wrong message format', () => {
 
   notifyWrongMessageFormat(channel, 123456);
 
-  expect(mockedSend.mock.calls.length).toBe(1);
-  expect(mockedSend.mock.calls[0][0]).toBe('<@123456> wrongMsg');
+  expect(mockedSend).toHaveBeenCalledTimes(1);
+  expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongMsg');
 });
 
 test('Should send message about won rank', () => {
@@ -48,8 +48,8 @@ test('Should send message about won rank', () => {
 
   notifyPrizedNumber(channel, 123456, 12);
 
-  expect(mockedSend.mock.calls.length).toBe(1);
-  expect(mockedSend.mock.calls[0][0]).toBe('<@123456>, rankWonMsg <@&12>!');
+  expect(mockedSend).toHaveBeenCalledTimes(1);
+  expect(mockedSend).toHaveBeenCalledWith('<@123456>, rankWonMsg <@&12>!');
 });
 
 test('Should send message about game over', () => {
@@ -60,8 +60,8 @@ test('Should send message about game over', () => {
 
   notifyGameOver(channel);
 
-  expect(mockedSend.mock.calls.length).toBe(1);
-  expect(mockedSend.mock.calls[0][0]).toBe('gameOverMsg');
+  expect(mockedSend).toHaveBeenCalledTimes(1);
+  expect(mockedSend).toHaveBeenCalledWith('gameOverMsg');
 });
 
 test('Should delete message', () => {
@@ -79,5 +79,5 @@ test('Should delete message', () => {
 
   deleteMessage(message);
 
-  expect(mockedDelete.mock.calls.length).toBe(1);
+  expect(mockedDelete).toHaveBeenCalledTimes(1);
 });

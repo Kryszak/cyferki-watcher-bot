@@ -55,6 +55,6 @@ test('Should return requested channel', () => {
 
   getChannel(client, message);
 
-  expect(mockedGetChannel.mock.calls.length).toBe(1);
-  expect(mockedGetChannel.mock.calls[0][0]).toBe(123456);
+  expect(mockedGetChannel).toHaveBeenCalledTimes(1);
+  expect(mockedGetChannel).toHaveBeenCalledWith(123456);
 });

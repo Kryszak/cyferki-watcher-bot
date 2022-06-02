@@ -17,8 +17,8 @@ test('Should add role to user ', () => {
 
   addRoleToUser(message, 12);
 
-  expect(mockedAdd.mock.calls.length).toBe(1);
-  expect(mockedAdd.mock.calls[0][0]).toBe(12);
+  expect(mockedAdd).toHaveBeenCalledTimes(1);
+  expect(mockedAdd).toHaveBeenCalledWith(12);
 });
 
 test('Should return true if user has role', () => {
