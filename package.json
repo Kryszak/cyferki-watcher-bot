@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky install"
   },
   "author": "kryszak",
   "dependencies": {
@@ -19,6 +20,7 @@
   "devDependencies": {
     "eslint": "^8.15.0",
     "eslint-config-google": "^0.14.0",
-    "jest": "^28.1.0"
+    "jest": "^28.1.0",
+    "husky": "^8.0.0"
   }
 }
