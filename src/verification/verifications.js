@@ -15,20 +15,14 @@ const {removeSendMessagePermissions, getChannel, isSentToWatchedChannel} = requi
 const {getLogger} = require('../logging/logging');
 const {getLastMessagesFromWatchedChannel, fetchMessage} = require('../discord/messageFetcher');
 
-let contextLogger;
+let logger = getLogger('root');
 
-const GAMEOVER_NUMBER = getGameoverNumber();
-const PRIZED_NUMBERS = loadPrizedNumbers();
 const WATCHED_CHANNEL = getWatchedChannel();
 
 const WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
 const WRONG_NUMBER_POSTED_ERROR = Error('WRONG_NUMBER');
 
-function loadPrizedNumbers() {
-  return getRanks();
-}
-
-function extractLastMessagesFrom(messages, count) {
+function extractLastUserMessagesFrom(messages, count) {
   return Array.from(messages.reverse().filter((msg) => isSentFromUser(msg)).values()).slice(-count);
 }
 
@@ -37,7 +31,7 @@ function getDuplicatedNumbers(messages, currentNumber) {
 }
 
 function extractNumbersForChecks(messages) {
-  return extractLastMessagesFrom(messages, getReadMessagesCount()).map((message) => extractNumberFromMessage(message));
+  return extractLastUserMessagesFrom(messages, getReadMessagesCount()).map((message) => extractNumberFromMessage(message));
 }
 
 function isNewlyPostedNumberCorrect(checkedNumbers) {
@@ -57,22 +51,22 @@ function handleWrongNumber(channel, lastMessage) {
 }
 
 function handlePrizedNumberPosted(number, lastMessage) {
-  const wonRoleId = PRIZED_NUMBERS[number];
+  const wonRoleId = getRanks()[number];
   addRoleToUser(lastMessage, wonRoleId);
 }
 
 function handleGameOver(channel) {
   new Promise((resolve) => {
-    setTimeout(resolve.bind(null, notifyGameOver(channel)), 5000);
+    setTimeout(resolve.bind(null, notifyGameOver(channel)), 3000);
   }).then(() => {
     removeSendMessagePermissions(channel);
   });
 }
 
 function handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages) {
-  contextLogger.debug('Last two numbers are the same, checking further');
+  logger.debug('Last two numbers are the same, checking further');
   const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
-  contextLogger.debug(`Last valid number: ${previousValidNumber}`);
+  logger.debug(`Last valid number: ${previousValidNumber}`);
   const duplicatedMessages = getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
   const correctedLastMessage = duplicatedMessages.shift();
   duplicatedMessages.forEach((msg) => {
@@ -91,19 +85,19 @@ function verifySentMessage(lastMessage, messages) {
   };
   if (isNaN(lastTwoNumbers.previousNumber) && isNaN(lastTwoNumbers.currentNumber)) {
     if (messages.every((msg) => !isContainingNumber(msg))) {
-      contextLogger.info('Skipping further validation as counting doesn\'t start yet');
+      logger.info('Skipping further validation as counting doesn\'t start yet');
       return;
     } else {
-      contextLogger.error('Something really bad happen: two messages without numbers when there are other numbers in channel!');
+      logger.error('Something really bad happen: two messages without numbers when there are other numbers in channel!');
       throw WRONG_MESSAGE_FORMAT_ERROR;
     }
   }
   if ((isNaN(lastTwoNumbers.previousNumber)) && lastTwoNumbers.currentNumber !== 1) {
-    contextLogger.error(`${lastMessage.author.username} tried to start game with value higher than 1!`);
+    logger.error(`${lastMessage.author.username} tried to start game with value higher than 1!`);
     throw WRONG_NUMBER_POSTED_ERROR;
   }
   if (isNaN(lastTwoNumbers.currentNumber)) {
-    contextLogger.error(`${lastMessage.author.username} sent message not starting with number.`);
+    logger.error(`${lastMessage.author.username} sent message not starting with number.`);
     throw WRONG_MESSAGE_FORMAT_ERROR;
   }
   if (lastTwoNumbers.previousNumber === lastTwoNumbers.currentNumber) {
@@ -112,12 +106,12 @@ function verifySentMessage(lastMessage, messages) {
   if (!isNaN(lastTwoNumbers.previousNumber) && !isNewlyPostedNumberCorrect(lastTwoNumbers)) {
     throw WRONG_NUMBER_POSTED_ERROR;
   }
-  if (lastTwoNumbers.currentNumber in PRIZED_NUMBERS) {
+  if (lastTwoNumbers.currentNumber in getRanks()) {
     fetchMessage(lastMessage).then(() => {
       handlePrizedNumberPosted(lastTwoNumbers.currentNumber, lastMessage);
     });
   }
-  if (lastTwoNumbers.currentNumber === GAMEOVER_NUMBER) {
+  if (lastTwoNumbers.currentNumber === getGameoverNumber()) {
     handleGameOver(lastMessage.channel);
   }
 }
@@ -134,26 +128,27 @@ function tryMessageVerifications(lastMessage, messages, channel) {
         handleWrongNumber(channel, lastMessage);
         break;
       default:
-        contextLogger.error('Unknown error occurred: ', error);
+        logger.error('Unknown error occurred: ', error);
         break;
     }
   }
 }
 
 function verifyNewMessage(lastMessage, client) {
-  contextLogger = getLogger(lastMessage.guild.name);
+  logger = getLogger(lastMessage.guild.name);
   const channel = getChannel(client, lastMessage);
   if (isSentToWatchedChannel(channel) && isSentFromUser(lastMessage)) {
-    contextLogger.info(`Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
+    logger.info(`Verifying message="${lastMessage.content}" sent to channel ${WATCHED_CHANNEL} by ${lastMessage.author.username}`);
     getLastMessagesFromWatchedChannel(channel)
         .then((messages) => {
           tryMessageVerifications(lastMessage, messages, channel);
         })
-        .catch((error) => contextLogger.error('Error while fetching last channel messages:', error))
-        .finally(() => contextLogger.info(`Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
+        .catch((error) => logger.error('Error while fetching last channel messages:', error))
+        .finally(() => logger.info(`Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
   }
 }
 
 module.exports = {
   verifyNewMessage: verifyNewMessage,
+  verifySentMessage: verifySentMessage,
 };
