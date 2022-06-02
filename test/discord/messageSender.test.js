@@ -5,7 +5,7 @@ const {
   notifyPrizedNumber,
   notifyGameOver,
   deleteMessage,
-} = require('../../src/discord/message_sender');
+} = require('../../src/discord/messageSender');
 
 jest.mock('../../src/globals');
 

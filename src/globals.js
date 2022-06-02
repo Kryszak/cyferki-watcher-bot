@@ -36,6 +36,10 @@ function getGameOverMessageContent() {
   return process.env.BOT_GAME_OVER_MESSAGE;
 }
 
+function getLogLevel() {
+  return process.env.LOG_LEVEL || 'info';
+}
+
 module.exports = {
   getClientToken: getClientToken,
   getWatchedChannel: getWatchedChannel,
@@ -46,4 +50,5 @@ module.exports = {
   getWrongMessageContent: getWrongMessageContent,
   getRankWonMessageContent: getRankWonMessageContent,
   getGameOverMessageContent: getGameOverMessageContent,
+  getLogLevel: getLogLevel,
 };

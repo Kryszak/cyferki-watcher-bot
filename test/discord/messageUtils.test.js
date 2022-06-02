@@ -1,4 +1,4 @@
-const {isSentFromUser, isContainingNumber, extractNumberFromMessage, fetchMessage} = require('../../src/discord/message_utils');
+const {isSentFromUser, isContainingNumber, extractNumberFromMessage} = require('../../src/discord/messageUtils');
 
 test('Should return true for message sent from user', () => {
   const message = {
@@ -50,21 +50,4 @@ test('Should return NaN if message doesn\'t contain valid number', () => {
   };
 
   expect(isNaN(extractNumberFromMessage(message))).toBeTruthy();
-});
-
-test('Should fetch message', () => {
-  const mockedFetch = jest.fn();
-  const message = {
-    'id': 123,
-    'channel': {
-      'messages': {
-        fetch: mockedFetch,
-      },
-    },
-  };
-
-  fetchMessage(message);
-
-  expect(mockedFetch).toHaveBeenCalledTimes(1);
-  expect(mockedFetch).toHaveBeenCalledWith(123);
 });

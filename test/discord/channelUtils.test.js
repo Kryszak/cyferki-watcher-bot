@@ -1,4 +1,4 @@
-const {isSentToWatchedChannel, removeSendMessagePermissions, getChannel} = require('../../src/discord/channel_utils');
+const {isSentToWatchedChannel, removeSendMessagePermissions, getChannel} = require('../../src/discord/channelUtils');
 const globals = require('../../src/globals');
 
 jest.mock('../../src/globals');

@@ -1,5 +1,5 @@
 const globals = require('../../src/globals');
-const {getLastMessagesFromWatchedChannel} = require('../../src/discord/message_fetcher');
+const {getLastMessagesFromWatchedChannel} = require('../../src/discord/messageFetcher');
 
 jest.mock('../../src/globals');
 

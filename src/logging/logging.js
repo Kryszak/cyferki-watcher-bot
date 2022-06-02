@@ -1,8 +1,7 @@
 const loglevel = require('loglevel');
 const prefix = require('loglevel-plugin-prefix');
 const chalk = require('chalk');
-
-const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const {getLogLevel} = require('../globals');
 
 const colors = {
   TRACE: chalk.magenta,
@@ -11,6 +10,8 @@ const colors = {
   WARN: chalk.yellow,
   ERROR: chalk.red,
 };
+
+const LOG_LEVEL = getLogLevel() || 'info';
 
 function formatTimestamp(timestamp) {
   return chalk.gray(`[${timestamp}]`);
