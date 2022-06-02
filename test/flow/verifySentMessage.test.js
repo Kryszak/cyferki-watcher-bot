@@ -3,6 +3,7 @@ const globals = require('../../src/globals');
 const roleManager = require('../../src/discord/roleManager');
 const messageSender = require('../../src/discord/messageSender');
 
+jest.useFakeTimers();
 jest.mock('../../src/globals');
 jest.mock('../../src/discord/roleManager');
 jest.mock('../../src/discord/channelUtils');
@@ -64,6 +65,20 @@ test('Verify first number posted', () => {
   const messages = [lastMessage].reverse();
 
   expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+});
+
+test('Verify error thrown on wrong channel state', () => {
+  const lastMessage = {
+    ...messageWithoutContent,
+    'content': 'Rules and so on',
+  };
+
+  const messages = [{...messageWithoutContent, 'content': 'Rules line 1'},
+    {...messageWithoutContent, 'content': '1'},
+    {...messageWithoutContent, 'content': 'Rules line 2'},
+    lastMessage].reverse();
+
+  expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
 
 test('Verify first number posted after rules', () => {
@@ -168,4 +183,19 @@ test('Verify rank granted for prized number', async () => {
 
   await verifySentMessage(lastMessage, messages);
   expect(roleManager.addRoleToUser).toHaveBeenCalledTimes(1);
+});
+
+test('Verify gameover for last number', async () => {
+  const lastMessage = {
+    ...messageWithoutContent,
+    'content': '20',
+  };
+
+  // discord returns messages in order from last one
+  const messages = [
+    {...messageWithoutContent, 'content': '18'}, {...messageWithoutContent, 'content': '19'}, lastMessage,
+  ].reverse();
+
+  await verifySentMessage(lastMessage, messages);
+  expect(messageSender.notifyGameOver).toHaveBeenCalledTimes(1);
 });
