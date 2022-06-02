@@ -70,8 +70,8 @@ function handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages) 
   const duplicatedMessages = getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
   const correctedLastMessage = duplicatedMessages.shift();
   duplicatedMessages.forEach((msg) => {
+    logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
     handleWrongNumber(msg.channel, msg);
-    deleteMessage(msg);
   });
   lastTwoNumbers['previousNumber'] = previousValidNumber;
   return correctedLastMessage;

@@ -1,6 +1,7 @@
 const {verifySentMessage} = require('../../src/verification/verifications');
 const globals = require('../../src/globals');
 const roleManager = require('../../src/discord/roleManager');
+const messageSender = require('../../src/discord/messageSender');
 
 jest.mock('../../src/globals');
 jest.mock('../../src/discord/roleManager');
@@ -13,6 +14,7 @@ const messageWithoutContent = {
   },
   'author': {
     'bot': false,
+    'username': 'test username',
   },
   'channel': {
     'messages': {
@@ -22,6 +24,7 @@ const messageWithoutContent = {
 };
 
 beforeAll(() => {
+  globals.getLogLevel.mockReturnValue('debug');
   globals.getReadMessagesCount.mockReturnValue(20);
   globals.getRanks.mockReturnValue(JSON.parse('{"10": "973271221112291409", "15": "973282436047839262"}'));
   globals.getGameoverNumber.mockReturnValue(20);
@@ -105,8 +108,23 @@ test('Verify error thrown on wrong message format', () => {
   expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
 
-test('Verify handling of duplicates', () => {
-  // TODO
+test('Verify handling of duplicates', async () => {
+  const lastMessage = {...messageWithoutContent, 'content': '2 posted'};
+  const firstMessage = {...messageWithoutContent, 'content': '1'};
+  const lastValidMessage = {...messageWithoutContent, 'content': '2 last valid'};
+
+  // discord returns messages in order from last one
+  const messages = [
+    firstMessage,
+    lastValidMessage,
+    {...messageWithoutContent, 'content': '2 duplicated'},
+    lastMessage,
+  ].reverse();
+
+  await verifySentMessage(lastMessage, messages);
+  expect(messageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
+  expect(messageSender.deleteMessage).toHaveBeenCalledTimes(2);
+  expect(messageSender.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
 });
 
 test('Verify error thrown on wrong posted number', () => {

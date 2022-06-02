@@ -31,4 +31,4 @@ GAMEOVER_NUMBER=<numerek kończący grę>
 
 ## Possible new features
 - Block editing messages
-- Cover index.js with tests
+- Increase test coverage
