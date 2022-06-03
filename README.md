@@ -15,7 +15,7 @@ In main project directory create `.env` file with following contents:
 CLIENT_TOKEN=<token_bota>
 WATCHED_CHANNEL=<nazwa kanału z grą>
 BOT_ERROR_MESSAGE=<Wiadomość wysyłana przez bota, gdy ktoś pomyli liczby, 
-np 'Co ty odkurwiasz, weź się naucz liczyć'>
+np 'Co robisz, weź się naucz liczyć'>
 BOT_WRONG_MESSAGE_FORMAT=<Wiadomość wysyłana, gdy gracz wprowadzi niepopranwą
 wiadomość, np 'Przeczytaj dokładnie regulamin gry - wiadomość nie była poprawna'>
 BOT_RANK_WON_MESSAGE=<Wiadomość wysyłana po wygraniu roli, np gratulacje za wygranie rangi>
