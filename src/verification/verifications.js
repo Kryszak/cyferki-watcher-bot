@@ -150,5 +150,6 @@ function verifyNewMessage(lastMessage, client) {
 
 module.exports = {
   verifyNewMessage: verifyNewMessage,
+  tryMessageVerifications: tryMessageVerifications,
   verifySentMessage: verifySentMessage,
 };
