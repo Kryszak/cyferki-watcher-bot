@@ -32,7 +32,7 @@ const messageWithoutContent = {
 };
 
 afterEach(() => {
-  jest.clearAllMocks();
+  messageSender.deleteMessage.mockClear();
 });
 
 test('Verify WRONG_MESSAGE_FORMAT_ERROR handling', async () => {
