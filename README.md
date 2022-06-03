@@ -1,3 +1,4 @@
+![test](https://github.com/Kryszak/cyferki-watcher-bot/actions/workflows/github-actions.yml/badge.svg)
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
 
