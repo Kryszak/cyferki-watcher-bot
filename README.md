@@ -12,16 +12,16 @@ Discord bot guarding rules of game "cyferki" in given channel
 ### Config
 In main project directory create `.env` file with following contents:
 ```
-CLIENT_TOKEN=<token_bota>
-WATCHED_CHANNEL=<nazwa kanału z grą>
-BOT_ERROR_MESSAGE=<Wiadomość wysyłana przez bota, gdy ktoś pomyli liczby, 
-np 'Co robisz, weź się naucz liczyć'>
-BOT_WRONG_MESSAGE_FORMAT=<Wiadomość wysyłana, gdy gracz wprowadzi niepopranwą
-wiadomość, np 'Przeczytaj dokładnie regulamin gry - wiadomość nie była poprawna'>
-BOT_RANK_WON_MESSAGE=<Wiadomość wysyłana po wygraniu roli, np gratulacje za wygranie rangi>
-BOT_GAME_OVER_MESSAGE=<Wiadomość wysyłana na koniec gry, np Koniec gry! Dziękuję wszystkim za uczestnictwo>
-RANKS=<JSON with number - rankId entries, np {"10": "973271221112291409", "15": "973282436047839262"}> 
-GAMEOVER_NUMBER=<numerek kończący grę>
+CLIENT_TOKEN=<bot's token>
+WATCHED_CHANNEL=<name of channel to watch>
+BOT_ERROR_MESSAGE=<Content of message sent, when user posts wrong number, 
+e.g. 'Please learn to count'>
+BOT_WRONG_MESSAGE_FORMAT=<Content of message sent, when user posts message in wrong format, 
+e.g. 'Read game rules - message was not correct'>
+BOT_RANK_WON_MESSAGE=<Content of message sent, when user posts message with number winning role e.g. 'congratulations on winning rank',>
+BOT_GAME_OVER_MESSAGE=<Content of message sent on last number, e.g. 'Gmae over! Thanks for playing'>
+RANKS=<JSON with number - rankId entries, e.g. {"10": "973271221112291409", "15": "973282436047839262"}> 
+GAMEOVER_NUMBER=<Number, on which game will end>
 ```
 
 ### Run project
