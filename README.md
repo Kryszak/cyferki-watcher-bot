@@ -32,4 +32,3 @@ GAMEOVER_NUMBER=<Number, on which game will end>
 
 ## Possible new features
 - Block editing messages
-- Increase test coverage
