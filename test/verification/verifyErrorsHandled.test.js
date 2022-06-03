@@ -31,6 +31,10 @@ const messageWithoutContent = {
   },
 };
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 test('Verify WRONG_MESSAGE_FORMAT_ERROR handling', async () => {
   const lastMessage = {
     ...messageWithoutContent,
