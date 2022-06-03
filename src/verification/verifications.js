@@ -101,9 +101,11 @@ function verifySentMessage(lastMessage, messages) {
     throw WRONG_MESSAGE_FORMAT_ERROR;
   }
   if (lastTwoNumbers.previousNumber === lastTwoNumbers.currentNumber) {
+    logger.error(`${lastMessage.author.username} posted number equal to previous, proceeding to deal with duplicate.`);
     lastMessage = handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages);
   }
   if (!isNaN(lastTwoNumbers.previousNumber) && !isNewlyPostedNumberCorrect(lastTwoNumbers)) {
+    logger.error(`${lastMessage.author.username} posted wrong number!`);
     throw WRONG_NUMBER_POSTED_ERROR;
   }
   if (lastTwoNumbers.currentNumber in getRanks()) {
