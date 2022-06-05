@@ -45,9 +45,9 @@ test('Verify message handling', () => {
     ...messageWithoutContent,
     'content': '3',
   };
-  const messages = [
-    {...messageWithoutContent, 'content': '1'}, {...messageWithoutContent, 'content': '2'}, lastMessage,
-  ].reverse();
+  const messages = [{...messageWithoutContent, 'content': '1'},
+    {...messageWithoutContent, 'content': '2'},
+    lastMessage].reverse();
   messageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
   expect(async () => await verifyNewMessage(lastMessage, client)).not.toThrowError();

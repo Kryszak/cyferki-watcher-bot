@@ -7,13 +7,6 @@ jest.mock('../../src/discord/roleManager');
 jest.mock('../../src/discord/channelUtils');
 jest.mock('../../src/discord/messageSender');
 
-beforeAll(() => {
-  globals.getLogLevel.mockReturnValue('debug');
-  globals.getReadMessagesCount.mockReturnValue(20);
-  globals.getRanks.mockReturnValue(JSON.parse('{"10": "973271221112291409", "15": "973282436047839262"}'));
-  globals.getGameoverNumber.mockReturnValue(20);
-});
-
 const channel = {};
 
 const messageWithoutContent = {
@@ -31,6 +24,13 @@ const messageWithoutContent = {
   },
 };
 
+beforeAll(() => {
+  globals.getLogLevel.mockReturnValue('debug');
+  globals.getReadMessagesCount.mockReturnValue(20);
+  globals.getRanks.mockReturnValue(JSON.parse('{"10": "973271221112291409", "15": "973282436047839262"}'));
+  globals.getGameoverNumber.mockReturnValue(20);
+});
+
 afterEach(() => {
   messageSender.deleteMessage.mockClear();
 });
@@ -43,8 +43,9 @@ test('Verify WRONG_MESSAGE_FORMAT_ERROR handling', async () => {
 
   // discord returns messages in order from last one
   const messages = [
-    {...messageWithoutContent, 'content': '1'}, {...messageWithoutContent, 'content': '2'}, lastMessage,
-  ].reverse();
+    {...messageWithoutContent, 'content': '1'},
+    {...messageWithoutContent, 'content': '2'},
+    lastMessage].reverse();
 
   await tryMessageVerifications(lastMessage, messages, channel);
 
@@ -62,8 +63,9 @@ test('Verify WRONG_NUMBER_POSTED_ERROR handling', async () => {
 
   // discord returns messages in order from last one
   const messages = [
-    {...messageWithoutContent, 'content': '1'}, {...messageWithoutContent, 'content': '2'}, lastMessage,
-  ].reverse();
+    {...messageWithoutContent, 'content': '1'},
+    {...messageWithoutContent, 'content': '2'},
+    lastMessage].reverse();
 
   await tryMessageVerifications(lastMessage, messages, channel);
 
