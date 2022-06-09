@@ -1,26 +1,36 @@
-const {isSentToWatchedChannel, removeSendMessagePermissions, getChannel} = require('../../src/discord/channelUtils');
-const globals = require('../../src/globals');
-
-jest.mock('../../src/globals');
+import ChannelUtils from "../../src/discord/ChannelUtils";
+import Globals from "../../src/Globals";
+import LoggerFactory from "../../src/logging/LoggerFactory";
 
 const channelName = 'watched';
 
-beforeAll(() => {
-  globals.getWatchedChannel.mockReturnValue(channelName);
-});
+const mockGlobals: jest.Mocked<Globals> = {
+  getClientToken: undefined,
+  getGameOverMessageContent: undefined,
+  getGameoverNumber: undefined,
+  getLogLevel: jest.fn().mockReturnValue('debug'),
+  getRankWonMessageContent: undefined,
+  getRanks: undefined,
+  getReadMessagesCount: undefined,
+  getWatchedChannel: jest.fn().mockReturnValue(channelName),
+  getWrongIncrementMessage: undefined,
+  getWrongMessageContent: undefined
+}
+
+const subject = new ChannelUtils(mockGlobals, new LoggerFactory(mockGlobals));
 
 test('Should return true for watched channel', () => {
   const channel = {
     'name': channelName,
   };
-  expect(isSentToWatchedChannel(channel)).toBeTruthy();
+  expect(subject.isSentToWatchedChannel(channel)).toBeTruthy();
 });
 
 test('Should return false for not watched channel', () => {
   const channel = {
     'name': 'general',
   };
-  expect(isSentToWatchedChannel(channel)).toBeFalsy();
+  expect(subject.isSentToWatchedChannel(channel)).toBeFalsy();
 });
 
 test('Should override permissions for channel', () => {
@@ -34,7 +44,7 @@ test('Should override permissions for channel', () => {
       'roles': {'everyone': true},
     },
   };
-  removeSendMessagePermissions(channel);
+  subject.removeSendMessagePermissions(channel);
 
   expect(mockedEdit.mock.calls.length).toBe(1);
 });
@@ -53,7 +63,7 @@ test('Should return requested channel', () => {
     'channelId': 123456,
   };
 
-  getChannel(client, message);
+  subject.getChannel(client, message);
 
   expect(mockedGetChannel).toHaveBeenCalledTimes(1);
   expect(mockedGetChannel).toHaveBeenCalledWith(123456);
