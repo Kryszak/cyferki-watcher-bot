@@ -1,20 +1,21 @@
-const globals = require('../../src/globals');
-const {
-  notifyWrongNumberProvided,
-  notifyWrongMessageFormat,
-  notifyPrizedNumber,
-  notifyGameOver,
-  deleteMessage,
-} = require('../../src/discord/messageSender');
+import MessageSender from '../../src/discord/MessageSender';
+import Globals from "../../src/Globals";
+import LoggerFactory from "../../src/logging/LoggerFactory";
 
-jest.mock('../../src/globals');
+const mockGlobals: jest.Mocked<Globals> = {
+  getClientToken: undefined,
+  getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
+  getGameoverNumber: undefined,
+  getLogLevel: jest.fn().mockReturnValue('debug'),
+  getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
+  getRanks: undefined,
+  getReadMessagesCount: undefined,
+  getWatchedChannel: undefined,
+  getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
+  getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
+}
 
-beforeAll(() => {
-  globals.getWrongIncrementMessage.mockReturnValue('wrongIncrementMsg');
-  globals.getWrongMessageContent.mockReturnValue('wrongMsg');
-  globals.getRankWonMessageContent.mockReturnValue('rankWonMsg');
-  globals.getGameOverMessageContent.mockReturnValue('gameOverMsg');
-});
+const subject = new MessageSender(mockGlobals, new LoggerFactory(mockGlobals));
 
 test('Should send message about wrong number', () => {
   const mockedSend = jest.fn();
@@ -22,7 +23,7 @@ test('Should send message about wrong number', () => {
     'send': mockedSend,
   };
 
-  notifyWrongNumberProvided(channel, 123456);
+  subject.notifyWrongNumberProvided(channel, 123456);
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongIncrementMsg');
@@ -34,7 +35,7 @@ test('Should send message about wrong message format', () => {
     'send': mockedSend,
   };
 
-  notifyWrongMessageFormat(channel, 123456);
+  subject.notifyWrongMessageFormat(channel, 123456);
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongMsg');
@@ -46,7 +47,7 @@ test('Should send message about won rank', () => {
     'send': mockedSend,
   };
 
-  notifyPrizedNumber(channel, 123456, 12);
+  subject.notifyPrizedNumber(channel, 123456, 12);
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456>, rankWonMsg <@&12>!');
@@ -58,7 +59,7 @@ test('Should send message about game over', () => {
     'send': mockedSend,
   };
 
-  notifyGameOver(channel);
+  subject.notifyGameOver(channel);
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('gameOverMsg');
@@ -77,7 +78,7 @@ test('Should delete message', () => {
     'delete': mockedDelete,
   };
 
-  deleteMessage(message);
+  subject.deleteMessage(message);
 
   expect(mockedDelete).toHaveBeenCalledTimes(1);
 });

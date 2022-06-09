@@ -1,13 +1,19 @@
-const {verifySentMessage} = require('../../src/verification/verifications');
-const globals = require('../../src/globals');
-const roleManager = require('../../src/discord/roleManager');
-const messageSender = require('../../src/discord/messageSender');
+import Globals from "../../src/Globals";
+import LoggerFactory from "../../src/logging/LoggerFactory";
+import MessageSender from "../../src/discord/MessageSender";
+import MessageFetcher from "../../src/discord/MessageFetcher";
+import RoleAdder from "../../src/discord/RoleAdder";
+import ChannelUtils from "../../src/discord/ChannelUtils";
+import Verifications from "../../src/verification/Verifications";
+import MessageUtils from "../../src/discord/MessageUtils";
+import mocked = jest.mocked;
 
 jest.useFakeTimers();
-jest.mock('../../src/globals');
-jest.mock('../../src/discord/roleManager');
-jest.mock('../../src/discord/channelUtils');
-jest.mock('../../src/discord/messageSender');
+jest.mock("../../src/discord/MessageFetcher");
+jest.mock("../../src/discord/MessageSender");
+jest.mock("../../src/discord/RoleAdder");
+
+const channelName = 'watched channel';
 
 const messageWithoutContent = {
   'guild': {
@@ -18,6 +24,7 @@ const messageWithoutContent = {
     'username': 'test username',
   },
   'channel': {
+    'name': channelName,
     'messages': {
       'fetch': () => Promise.resolve(),
     },
@@ -34,12 +41,33 @@ const messageFromBot = {
   },
 };
 
-beforeAll(() => {
-  globals.getLogLevel.mockReturnValue('debug');
-  globals.getReadMessagesCount.mockReturnValue(20);
-  globals.getRanks.mockReturnValue(JSON.parse('{"10": "973271221112291409", "15": "973282436047839262"}'));
-  globals.getGameoverNumber.mockReturnValue(20);
-});
+const mockGlobals: jest.Mocked<Globals> = {
+  getClientToken: undefined,
+  getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
+  getGameoverNumber: jest.fn().mockReturnValue(20),
+  getLogLevel: jest.fn().mockReturnValue('debug'),
+  getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
+  getRanks: jest.fn().mockReturnValue({'10': '123'}),
+  getReadMessagesCount: jest.fn().mockReturnValue(20),
+  getWatchedChannel: jest.fn().mockReturnValue(channelName),
+  getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
+  getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
+}
+const loggerFactory = new LoggerFactory(mockGlobals);
+const mockMessageSender = mocked(new MessageSender(mockGlobals, loggerFactory));
+const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
+const mockRoleAdder = mocked(new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory));
+const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
+
+const subject = new Verifications(
+  mockGlobals,
+  new MessageUtils(),
+  mockMessageSender,
+  mockMessageFetcher,
+  mockRoleAdder,
+  mockChannelUtils,
+  loggerFactory
+);
 
 test('Verify empty channel - writing rules', () => {
   const lastMessage = {
@@ -49,7 +77,7 @@ test('Verify empty channel - writing rules', () => {
 
   const messages = [lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify writing rules', () => {
@@ -63,7 +91,7 @@ test('Verify writing rules', () => {
     {...messageWithoutContent, 'content': 'Rules line 2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify first number posted', () => {
@@ -74,7 +102,7 @@ test('Verify first number posted', () => {
 
   const messages = [lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify error thrown on wrong channel state', () => {
@@ -89,7 +117,7 @@ test('Verify error thrown on wrong channel state', () => {
     {...messageWithoutContent, 'content': 'Rules line 2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
+  expect(() => subject.verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
 
 test('Verify first number posted after rules', () => {
@@ -103,7 +131,7 @@ test('Verify first number posted after rules', () => {
     {...messageWithoutContent, 'content': 'Rules line 2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify error thrown on wrong first number', () => {
@@ -117,7 +145,7 @@ test('Verify error thrown on wrong first number', () => {
     {...messageWithoutContent, 'content': 'Rules line 2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_NUMBER');
+  expect(() => subject.verifySentMessage(lastMessage, messages)).toThrowError('WRONG_NUMBER');
 });
 
 test('Verify error thrown on wrong message format', () => {
@@ -132,7 +160,7 @@ test('Verify error thrown on wrong message format', () => {
     {...messageWithoutContent, 'content': '2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
+  expect(() => subject.verifySentMessage(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
 
 test('Verify handling of duplicates', async () => {
@@ -147,10 +175,13 @@ test('Verify handling of duplicates', async () => {
     {...messageWithoutContent, 'content': '2 duplicated'},
     lastMessage].reverse();
 
-  await verifySentMessage(lastMessage, messages);
-  expect(messageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
-  expect(messageSender.deleteMessage).toHaveBeenCalledTimes(2);
-  expect(messageSender.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
+  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
+
+  await subject.verifySentMessage(lastMessage, messages);
+
+  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
+  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(2);
+  expect(mockMessageSender.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
 });
 
 test('Verify error thrown on wrong posted number', () => {
@@ -165,7 +196,7 @@ test('Verify error thrown on wrong posted number', () => {
     {...messageWithoutContent, 'content': '2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).toThrowError('WRONG_NUMBER');
+  expect(() => subject.verifySentMessage(lastMessage, messages)).toThrowError('WRONG_NUMBER');
 });
 
 test('Verify correct message sent', () => {
@@ -180,7 +211,7 @@ test('Verify correct message sent', () => {
     {...messageWithoutContent, 'content': '2'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify correct message sent with previous bot messages', () => {
@@ -197,7 +228,7 @@ test('Verify correct message sent with previous bot messages', () => {
     {...messageFromBot, 'content': 'another bot talk'},
     lastMessage].reverse();
 
-  expect(() => verifySentMessage(lastMessage, messages)).not.toThrowError();
+  expect(() => subject.verifySentMessage(lastMessage, messages)).not.toThrowError();
 });
 
 test('Verify rank granted for prized number', async () => {
@@ -212,8 +243,11 @@ test('Verify rank granted for prized number', async () => {
     {...messageWithoutContent, 'content': '9'},
     lastMessage].reverse();
 
-  await verifySentMessage(lastMessage, messages);
-  expect(roleManager.addRoleToUser).toHaveBeenCalledTimes(1);
+  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
+
+  await subject.verifySentMessage(lastMessage, messages);
+
+  expect(mockRoleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
 });
 
 test('Verify gameover for last number', async () => {
@@ -228,6 +262,7 @@ test('Verify gameover for last number', async () => {
     {...messageWithoutContent, 'content': '19'},
     lastMessage].reverse();
 
-  await verifySentMessage(lastMessage, messages);
-  expect(messageSender.notifyGameOver).toHaveBeenCalledTimes(1);
+  await subject.verifySentMessage(lastMessage, messages);
+
+  expect(mockMessageSender.notifyGameOver).toHaveBeenCalledTimes(1);
 });
