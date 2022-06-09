@@ -4,6 +4,7 @@ import MessageSender from "../../src/discord/MessageSender";
 import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
 import mocked = jest.mocked;
+import MessageUtils from "../../src/discord/MessageUtils";
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -20,8 +21,8 @@ const mockGlobals: jest.Mocked<Globals> = {
   getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
   getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
-
-const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
+const messageUtils = new MessageUtils();
+const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
 const mockMessageSender = mocked(new MessageSender(mockGlobals, new LoggerFactory(mockGlobals)));
 
 const subject = new RoleAdder(mockMessageFetcher, mockMessageSender, new LoggerFactory(mockGlobals));

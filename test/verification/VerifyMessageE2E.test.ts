@@ -7,6 +7,8 @@ import ChannelUtils from "../../src/discord/ChannelUtils";
 import MessageVerificator from "../../src/verification/MessageVerificator";
 import MessageUtils from "../../src/discord/MessageUtils";
 import mocked = jest.mocked;
+import PrizeManager from "../../src/verification/PrizeManager";
+import ErrorHandler from "../../src/verification/ErrorHandler";
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -53,18 +55,21 @@ const mockGlobals: jest.Mocked<Globals> = {
   getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 const loggerFactory = new LoggerFactory(mockGlobals);
+const messageUtils = new MessageUtils();
 const mockMessageSender = mocked(new MessageSender(mockGlobals, loggerFactory));
-const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
-const mockRoleAdder = mocked(new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory));
+const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
+const roleAdder = new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
-
+const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher);
+const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender,loggerFactory);
 const subject = new MessageVerificator(
   mockGlobals,
-  new MessageUtils(),
+  messageUtils,
   mockMessageSender,
   mockMessageFetcher,
-  mockRoleAdder,
   mockChannelUtils,
+  prizeManager,
+  errorHandler,
   loggerFactory
 );
 
@@ -75,7 +80,7 @@ test('Verify message handling', () => {
   };
   const messages = [{...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
-    lastMessage].reverse();
+    lastMessage];
   mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
   expect(async () => await subject.verifyNewMessage(lastMessage, client)).not.toThrowError();

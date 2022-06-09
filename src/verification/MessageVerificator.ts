@@ -3,10 +3,11 @@ import MessageUtils from "../discord/MessageUtils";
 import MessageSender from "../discord/MessageSender";
 import Globals from "../Globals";
 import LoggerFactory from "../logging/LoggerFactory";
-import RoleAdder from "../discord/RoleAdder";
 import ChannelUtils from "../discord/ChannelUtils";
 import MessageFetcher from "../discord/MessageFetcher";
 import NumbersUnderVerification from "./NumbersUnderVerification";
+import PrizeManager from "./PrizeManager";
+import ErrorHandler from "./ErrorHandler";
 
 export default class MessageVerificator {
   private readonly WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
@@ -16,8 +17,9 @@ export default class MessageVerificator {
   private messageUtils: MessageUtils;
   private messageSender: MessageSender;
   private messageFetcher: MessageFetcher;
-  private roleAdder: RoleAdder;
   private channelUtils: ChannelUtils;
+  private prizeManager: PrizeManager;
+  private errorHandler: ErrorHandler;
   private loggerFactory: LoggerFactory;
   private logger;
 
@@ -25,15 +27,17 @@ export default class MessageVerificator {
               messageUtils: MessageUtils,
               messageSender: MessageSender,
               messageFetcher: MessageFetcher,
-              roleAdder: RoleAdder,
               channelUtils: ChannelUtils,
+              prizeManager: PrizeManager,
+              errorHandler: ErrorHandler,
               loggerFactory: LoggerFactory) {
     this.globals = globals;
     this.messageUtils = messageUtils;
     this.messageSender = messageSender;
     this.messageFetcher = messageFetcher;
-    this.roleAdder = roleAdder;
     this.channelUtils = channelUtils;
+    this.prizeManager = prizeManager;
+    this.errorHandler = errorHandler;
     this.loggerFactory = loggerFactory;
     this.logger = this.loggerFactory.getLogger('root');
   }
@@ -57,17 +61,7 @@ export default class MessageVerificator {
     try {
       this.runMessageVerifications(lastMessage, messages);
     } catch (error) {
-      switch (error) {
-        case this.WRONG_MESSAGE_FORMAT_ERROR:
-          this.handleWrongMessageFormat(channel, lastMessage);
-          break;
-        case this.WRONG_NUMBER_POSTED_ERROR:
-          this.handleWrongNumber(channel, lastMessage);
-          break;
-        default:
-          this.logger.error('Unknown error occurred: ', error);
-          break;
-      }
+      this.errorHandler.handleError(error, channel, lastMessage);
     }
   }
 
@@ -99,38 +93,18 @@ export default class MessageVerificator {
       this.logger.warn(`${lastMessage.author.username} posted wrong number!`);
       throw this.WRONG_NUMBER_POSTED_ERROR;
     }
-    if (lastTwoNumbers.currentNumber in this.globals.getRanks()) {
-      this.messageFetcher.fetchMessage(lastMessage).then(() => {
-        this.handlePrizedNumberPosted(lastTwoNumbers.currentNumber, lastMessage);
-      });
-    }
+    this.prizeManager.checkForWonRole(lastTwoNumbers, lastMessage);
     if (lastTwoNumbers.currentNumber === this.globals.getGameoverNumber()) {
       this.handleGameOver(lastMessage.channel);
     }
   }
 
   private extractNumbersForChecks(messages) {
-    return this.extractLastUserMessagesFrom(messages, this.globals.getReadMessagesCount()).map((message) => this.messageUtils.extractNumberFromMessage(message));
-  }
-
-  private extractLastUserMessagesFrom(messages, count) {
-    return Array.from(messages.reverse().filter((msg) => this.messageUtils.isSentFromUser(msg)).values()).slice(-count);
+    return messages.map((message) => this.messageUtils.extractNumberFromMessage(message));
   }
 
   private allMessagesDoesNotContainNumbers(messages) {
     return messages.every((msg) => !this.messageUtils.isContainingNumber(msg));
-  }
-
-  private handleWrongMessageFormat(channel, lastMessage) {
-    this.messageSender.notifyWrongMessageFormat(channel, lastMessage.author.id);
-    this.messageSender.deleteMessage(lastMessage);
-  }
-
-  private handleWrongNumber(channel, lastMessage) {
-    this.messageFetcher.fetchMessage(lastMessage).then(() => {
-      this.messageSender.notifyWrongNumberProvided(channel, lastMessage.author.id);
-      this.messageSender.deleteMessage(lastMessage);
-    });
   }
 
   private handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages) {
@@ -141,7 +115,7 @@ export default class MessageVerificator {
     const correctedLastMessage = duplicatedMessages.shift();
     duplicatedMessages.forEach((msg: Message) => {
       this.logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
-      this.handleWrongNumber(msg.channel, msg);
+      this.errorHandler.handleWrongNumber(msg.channel, msg);
     });
     lastTwoNumbers.previousNumber = previousValidNumber;
     return correctedLastMessage;
@@ -149,11 +123,6 @@ export default class MessageVerificator {
 
   private getDuplicatedNumbers(messages, currentNumber) {
     return Array.from(messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber)).values());
-  }
-
-  private handlePrizedNumberPosted(number, lastMessage) {
-    const wonRoleId = this.globals.getRanks()[number];
-    this.roleAdder.addRoleToUser(lastMessage, wonRoleId);
   }
 
   private handleGameOver(channel) {

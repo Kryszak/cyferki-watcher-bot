@@ -7,6 +7,8 @@ import ChannelUtils from "../../src/discord/ChannelUtils";
 import MessageVerificator from "../../src/verification/MessageVerificator";
 import MessageUtils from "../../src/discord/MessageUtils";
 import mocked = jest.mocked;
+import PrizeManager from "../../src/verification/PrizeManager";
+import ErrorHandler from "../../src/verification/ErrorHandler";
 
 jest.useFakeTimers();
 jest.mock("../../src/discord/MessageFetcher");
@@ -31,16 +33,6 @@ const messageWithoutContent = {
   },
 };
 
-const messageFromBot = {
-  'guild': {
-    'name': 'test guild',
-  },
-  'author': {
-    'bot': true,
-    'username': 'bot user',
-  },
-};
-
 const mockGlobals: jest.Mocked<Globals> = {
   getClientToken: undefined,
   getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
@@ -54,18 +46,21 @@ const mockGlobals: jest.Mocked<Globals> = {
   getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 const loggerFactory = new LoggerFactory(mockGlobals);
+const messageUtils = new MessageUtils();
 const mockMessageSender = mocked(new MessageSender(mockGlobals, loggerFactory));
-const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
-const mockRoleAdder = mocked(new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory));
+const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
+const roleAdder = new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
-
+const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher);
+const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender,loggerFactory);
 const subject = new MessageVerificator(
   mockGlobals,
-  new MessageUtils(),
+  messageUtils,
   mockMessageSender,
   mockMessageFetcher,
-  mockRoleAdder,
   mockChannelUtils,
+  prizeManager,
+  errorHandler,
   loggerFactory
 );
 
@@ -75,7 +70,7 @@ test('Verify empty channel - writing rules', () => {
     'content': 'Rules and so on',
   };
 
-  const messages = [lastMessage].reverse();
+  const messages = [lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
 });
@@ -89,7 +84,7 @@ test('Verify writing rules', () => {
   const messages = [
     {...messageWithoutContent, 'content': 'Rules line 1'},
     {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
 });
@@ -100,7 +95,7 @@ test('Verify first number posted', () => {
     'content': '1',
   };
 
-  const messages = [lastMessage].reverse();
+  const messages = [lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
 });
@@ -115,7 +110,7 @@ test('Verify error thrown on wrong channel state', () => {
     {...messageWithoutContent, 'content': 'Rules line 1'},
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
@@ -129,7 +124,7 @@ test('Verify first number posted after rules', () => {
   const messages = [
     {...messageWithoutContent, 'content': 'Rules line 1'},
     {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
 });
@@ -143,7 +138,7 @@ test('Verify error thrown on wrong first number', () => {
   const messages = [
     {...messageWithoutContent, 'content': 'Rules line 1'},
     {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).toThrowError('WRONG_NUMBER');
 });
@@ -154,11 +149,10 @@ test('Verify error thrown on wrong message format', () => {
     'content': 'qwe',
   };
 
-  // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).toThrowError('WRONG_MESSAGE_FORMAT');
 });
@@ -168,12 +162,11 @@ test('Verify handling of duplicates', async () => {
   const firstMessage = {...messageWithoutContent, 'content': '1'};
   const lastValidMessage = {...messageWithoutContent, 'content': '2 last valid'};
 
-  // discord returns messages in order from last one
   const messages = [
     firstMessage,
     lastValidMessage,
     {...messageWithoutContent, 'content': '2 duplicated'},
-    lastMessage].reverse();
+    lastMessage];
 
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
@@ -190,11 +183,10 @@ test('Verify error thrown on wrong posted number', () => {
     'content': '4',
   };
 
-  // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).toThrowError('WRONG_NUMBER');
 });
@@ -205,28 +197,10 @@ test('Verify correct message sent', () => {
     'content': '3',
   };
 
-  // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
-    lastMessage].reverse();
-
-  expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
-});
-
-test('Verify correct message sent with previous bot messages', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '3',
-  };
-
-  // discord returns messages in order from last one
-  const messages = [
-    {...messageWithoutContent, 'content': '1'},
-    {...messageFromBot, 'content': 'bot talk'},
-    {...messageWithoutContent, 'content': '2'},
-    {...messageFromBot, 'content': 'another bot talk'},
-    lastMessage].reverse();
+    lastMessage];
 
   expect(() => subject.runMessageVerifications(lastMessage, messages)).not.toThrowError();
 });
@@ -237,17 +211,16 @@ test('Verify rank granted for prized number', async () => {
     'content': '10',
   };
 
-  // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '8'},
     {...messageWithoutContent, 'content': '9'},
-    lastMessage].reverse();
+    lastMessage];
 
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   await subject.runMessageVerifications(lastMessage, messages);
 
-  expect(mockRoleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
+  expect(roleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
 });
 
 test('Verify gameover for last number', async () => {
@@ -256,11 +229,10 @@ test('Verify gameover for last number', async () => {
     'content': '20',
   };
 
-  // discord returns messages in order from last one
   const messages = [
     {...messageWithoutContent, 'content': '18'},
     {...messageWithoutContent, 'content': '19'},
-    lastMessage].reverse();
+    lastMessage];
 
   await subject.runMessageVerifications(lastMessage, messages);
 

@@ -7,6 +7,8 @@ import MessageSender from "./discord/MessageSender";
 import MessageFetcher from "./discord/MessageFetcher";
 import RoleAdder from "./discord/RoleAdder";
 import ChannelUtils from "./discord/ChannelUtils";
+import PrizeManager from "./verification/PrizeManager";
+import ErrorHandler from "./verification/ErrorHandler";
 
 
 const globals = new Globals();
@@ -27,16 +29,18 @@ function printRolesGrantedForNumberOnServer(server) {
 
 const client = new Discord.Client({intents: ['GUILDS', 'GUILD_MESSAGES']});
 
-const messageFetcher = new MessageFetcher(globals);
+const messageUtils = new MessageUtils();
+const messageFetcher = new MessageFetcher(globals, messageUtils);
 const messageSender = new MessageSender(globals, loggerFactory);
-
+const roleAdder = new RoleAdder(messageFetcher, messageSender, loggerFactory);
 const verifications = new MessageVerificator(
   globals,
-  new MessageUtils(),
+  messageUtils,
   messageSender,
   messageFetcher,
-  new RoleAdder(messageFetcher, messageSender, loggerFactory),
   new ChannelUtils(globals, loggerFactory),
+  new PrizeManager(globals, roleAdder, messageFetcher),
+  new ErrorHandler(messageFetcher, messageSender, loggerFactory),
   loggerFactory
 );
 
