@@ -33,6 +33,7 @@ const messageUtils = new MessageUtils();
 const messageFetcher = new MessageFetcher(globals, messageUtils);
 const messageSender = new MessageSender(globals, loggerFactory);
 const roleAdder = new RoleAdder(messageFetcher, messageSender, loggerFactory);
+// TODO DI https://github.com/inversify/InversifyJS
 const verifications = new MessageVerificator(
   globals,
   messageUtils,

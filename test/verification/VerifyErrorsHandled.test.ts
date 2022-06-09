@@ -79,9 +79,10 @@ test('Verify WRONG_MESSAGE_FORMAT_ERROR handling', async () => {
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
     lastMessage];
+  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
-  await subject.tryMessageVerifications(lastMessage, messages, channel);
+  await subject.tryMessageVerifications(lastMessage,  channel);
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -99,10 +100,10 @@ test('Verify WRONG_NUMBER_POSTED_ERROR handling', async () => {
     {...messageWithoutContent, 'content': '1'},
     {...messageWithoutContent, 'content': '2'},
     lastMessage];
-
+  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
-  await subject.tryMessageVerifications(lastMessage, messages, channel);
+  await subject.tryMessageVerifications(lastMessage, channel);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);

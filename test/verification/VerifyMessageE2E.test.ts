@@ -86,3 +86,4 @@ test('Verify message handling', () => {
   expect(async () => await subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
+// TODO move here all MessageVerificator tests
