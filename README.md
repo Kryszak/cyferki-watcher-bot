@@ -25,7 +25,10 @@ GAMEOVER_NUMBER=<Number, on which game will end>
 ```
 
 ### Run project
-```npm run start```
+```
+npm run watch-ts # Run auto rebuilding of changed files
+npm run watch-node # Run auto restart on code change
+```
 
 ### Run tests
 ```npm run test```

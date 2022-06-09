@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import LoggerFactory from "./logging/LoggerFactory";
 import Globals from "./Globals";
-import Verifications from "./verification/Verifications";
+import MessageVerificator from "./verification/MessageVerificator";
 import MessageUtils from "./discord/MessageUtils";
 import MessageSender from "./discord/MessageSender";
 import MessageFetcher from "./discord/MessageFetcher";
@@ -30,7 +30,7 @@ const client = new Discord.Client({intents: ['GUILDS', 'GUILD_MESSAGES']});
 const messageFetcher = new MessageFetcher(globals);
 const messageSender = new MessageSender(globals, loggerFactory);
 
-const verifications = new Verifications(
+const verifications = new MessageVerificator(
   globals,
   new MessageUtils(),
   messageSender,

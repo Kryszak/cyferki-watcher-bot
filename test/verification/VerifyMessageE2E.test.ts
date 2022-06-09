@@ -4,7 +4,7 @@ import MessageSender from "../../src/discord/MessageSender";
 import MessageFetcher from "../../src/discord/MessageFetcher";
 import RoleAdder from "../../src/discord/RoleAdder";
 import ChannelUtils from "../../src/discord/ChannelUtils";
-import Verifications from "../../src/verification/Verifications";
+import MessageVerificator from "../../src/verification/MessageVerificator";
 import MessageUtils from "../../src/discord/MessageUtils";
 import mocked = jest.mocked;
 
@@ -12,28 +12,29 @@ jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
 
 const channelName = 'watched channel';
-
+const channel = {
+  'name': channelName,
+  'messages': {
+    'fetch': () => Promise.resolve(),
+  }
+};
 const messageWithoutContent = {
   'guild': {
     'name': 'test guild',
   },
   'author': {
+    'id': 'id',
     'bot': false,
     'username': 'test username',
   },
-  'channel': {
-    'name': channelName,
-    'messages': {
-      'fetch': () => Promise.resolve(),
-    },
-  },
+  'channel': channel,
 };
 
 const client = {
   'channels': {
     'cache': {
       'get': () => {
-        return {'name': 'watched channel'};
+        return channel;
       },
     },
   },
@@ -57,7 +58,7 @@ const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
 const mockRoleAdder = mocked(new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory));
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
 
-const subject = new Verifications(
+const subject = new MessageVerificator(
   mockGlobals,
   new MessageUtils(),
   mockMessageSender,
@@ -79,3 +80,4 @@ test('Verify message handling', () => {
 
   expect(async () => await subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
+

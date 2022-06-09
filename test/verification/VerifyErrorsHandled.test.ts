@@ -2,7 +2,7 @@ import Globals from "../../src/Globals";
 import MessageFetcher from "../../src/discord/MessageFetcher";
 import MessageSender from "../../src/discord/MessageSender";
 import LoggerFactory from "../../src/logging/LoggerFactory";
-import Verifications from "../../src/verification/Verifications";
+import MessageVerificator from "../../src/verification/MessageVerificator";
 import MessageUtils from "../../src/discord/MessageUtils";
 import RoleAdder from "../../src/discord/RoleAdder";
 import ChannelUtils from "../../src/discord/ChannelUtils";
@@ -50,7 +50,7 @@ const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals));
 const mockRoleAdder = mocked(new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory));
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
 
-const subject = new Verifications(
+const subject = new MessageVerificator(
   mockGlobals,
   new MessageUtils(),
   mockMessageSender,
