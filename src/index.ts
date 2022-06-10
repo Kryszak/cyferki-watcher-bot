@@ -9,6 +9,7 @@ import RoleAdder from "./discord/RoleAdder";
 import ChannelUtils from "./discord/ChannelUtils";
 import PrizeManager from "./verification/PrizeManager";
 import ErrorHandler from "./verification/ErrorHandler";
+import GameoverManager from "./verification/GameoverManager";
 
 
 const globals = new Globals();
@@ -33,14 +34,14 @@ const messageUtils = new MessageUtils();
 const messageFetcher = new MessageFetcher(globals, messageUtils);
 const messageSender = new MessageSender(globals, loggerFactory);
 const roleAdder = new RoleAdder(messageFetcher, messageSender, loggerFactory);
+const channelUtils = new ChannelUtils(globals, loggerFactory);
 // TODO DI https://github.com/inversify/InversifyJS
 const verifications = new MessageVerificator(
-  globals,
   messageUtils,
-  messageSender,
   messageFetcher,
-  new ChannelUtils(globals, loggerFactory),
+  channelUtils,
   new PrizeManager(globals, roleAdder, messageFetcher),
+  new GameoverManager(globals, channelUtils, messageSender),
   new ErrorHandler(messageFetcher, messageSender, loggerFactory),
   loggerFactory
 );

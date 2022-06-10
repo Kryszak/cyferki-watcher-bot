@@ -1,42 +1,38 @@
 import {Message} from "discord.js";
 import MessageUtils from "../discord/MessageUtils";
-import MessageSender from "../discord/MessageSender";
-import Globals from "../Globals";
 import LoggerFactory from "../logging/LoggerFactory";
 import ChannelUtils from "../discord/ChannelUtils";
 import MessageFetcher from "../discord/MessageFetcher";
 import NumbersUnderVerification from "./NumbersUnderVerification";
 import PrizeManager from "./PrizeManager";
 import ErrorHandler from "./ErrorHandler";
+import GameoverManager from "./GameoverManager";
 
 export default class MessageVerificator {
   private readonly WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
   private readonly WRONG_NUMBER_POSTED_ERROR = Error('WRONG_NUMBER');
 
-  private globals: Globals;
   private messageUtils: MessageUtils;
-  private messageSender: MessageSender;
   private messageFetcher: MessageFetcher;
   private channelUtils: ChannelUtils;
   private prizeManager: PrizeManager;
+  private gameoverManager: GameoverManager;
   private errorHandler: ErrorHandler;
   private loggerFactory: LoggerFactory;
   private logger;
 
-  constructor(globals: Globals,
-              messageUtils: MessageUtils,
-              messageSender: MessageSender,
+  constructor(messageUtils: MessageUtils,
               messageFetcher: MessageFetcher,
               channelUtils: ChannelUtils,
               prizeManager: PrizeManager,
+              gameoverManager: GameoverManager,
               errorHandler: ErrorHandler,
               loggerFactory: LoggerFactory) {
-    this.globals = globals;
     this.messageUtils = messageUtils;
-    this.messageSender = messageSender;
     this.messageFetcher = messageFetcher;
     this.channelUtils = channelUtils;
     this.prizeManager = prizeManager;
+    this.gameoverManager = gameoverManager;
     this.errorHandler = errorHandler;
     this.loggerFactory = loggerFactory;
     this.logger = this.loggerFactory.getLogger('root');
@@ -90,9 +86,7 @@ export default class MessageVerificator {
       throw this.WRONG_NUMBER_POSTED_ERROR;
     }
     this.prizeManager.checkForWonRole(lastTwoNumbers, lastMessage);
-    if (lastTwoNumbers.currentNumber === this.globals.getGameoverNumber()) {
-      this.handleGameOver(lastMessage.channel);
-    }
+    this.gameoverManager.checkForGameOver(lastTwoNumbers.currentNumber, lastMessage.channel);
   }
 
   private extractNumbersForChecks(messages) {
@@ -119,13 +113,5 @@ export default class MessageVerificator {
 
   private getDuplicatedNumbers(messages, currentNumber) {
     return Array.from(messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber)).values());
-  }
-
-  private handleGameOver(channel) {
-    new Promise((resolve) => {
-      setTimeout(resolve.bind(null, this.messageSender.notifyGameOver(channel)), 3000);
-    }).then(() => {
-      this.channelUtils.removeSendMessagePermissions(channel);
-    });
   }
 }

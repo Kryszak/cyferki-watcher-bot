@@ -8,6 +8,7 @@ import MessageVerificator from "../../src/verification/MessageVerificator";
 import MessageUtils from "../../src/discord/MessageUtils";
 import PrizeManager from "../../src/verification/PrizeManager";
 import ErrorHandler from "../../src/verification/ErrorHandler";
+import GameoverManager from "../../src/verification/GameoverManager";
 import mocked = jest.mocked;
 
 jest.useFakeTimers();
@@ -73,14 +74,14 @@ const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils))
 const roleAdder = new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
 const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher);
+const gameoverManager = new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender);
 const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, loggerFactory);
 const subject = new MessageVerificator(
-  mockGlobals,
   messageUtils,
-  mockMessageSender,
   mockMessageFetcher,
   mockChannelUtils,
   prizeManager,
+  gameoverManager,
   errorHandler,
   loggerFactory
 );
@@ -263,21 +264,6 @@ test('Verify handling of duplicates', async () => {
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
   expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(2);
   expect(mockMessageSender.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
-});
-
-test('Verify correct message sent', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '3',
-  };
-
-  const messages = [
-    {...messageWithoutContent, 'content': '1'},
-    {...messageWithoutContent, 'content': '2'},
-    lastMessage];
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-
-  expect(async () => await subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify rank granted for prized number', async () => {
