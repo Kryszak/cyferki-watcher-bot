@@ -2,18 +2,11 @@ import * as Discord from 'discord.js';
 import LoggerFactory from "./logging/LoggerFactory";
 import Globals from "./Globals";
 import MessageVerificator from "./verification/MessageVerificator";
-import MessageUtils from "./discord/MessageUtils";
-import MessageSender from "./discord/MessageSender";
-import MessageFetcher from "./discord/MessageFetcher";
-import RoleAdder from "./discord/RoleAdder";
-import ChannelUtils from "./discord/ChannelUtils";
-import PrizeManager from "./verification/PrizeManager";
-import ErrorHandler from "./verification/ErrorHandler";
-import GameoverManager from "./verification/GameoverManager";
+import {container} from "./inversify.config";
 
 
-const globals = new Globals();
-const loggerFactory = new LoggerFactory(globals);
+const globals = container.get<Globals>(Globals);
+const loggerFactory = container.get<LoggerFactory>(LoggerFactory);
 const rootLogger = loggerFactory.getLogger('root');
 
 function printRolesGrantedForNumberOnServer(server) {
@@ -30,21 +23,7 @@ function printRolesGrantedForNumberOnServer(server) {
 
 const client = new Discord.Client({intents: ['GUILDS', 'GUILD_MESSAGES']});
 
-const messageUtils = new MessageUtils();
-const messageFetcher = new MessageFetcher(globals, messageUtils);
-const messageSender = new MessageSender(globals, loggerFactory);
-const roleAdder = new RoleAdder(messageFetcher, messageSender, loggerFactory);
-const channelUtils = new ChannelUtils(globals, loggerFactory);
-// TODO DI https://github.com/inversify/InversifyJS
-const verifications = new MessageVerificator(
-  messageUtils,
-  messageFetcher,
-  channelUtils,
-  new PrizeManager(globals, roleAdder, messageFetcher),
-  new GameoverManager(globals, channelUtils, messageSender),
-  new ErrorHandler(messageFetcher, messageSender, loggerFactory),
-  loggerFactory
-);
+const messageVerificator = container.get<MessageVerificator>(MessageVerificator);
 
 client.on('ready', () => {
   rootLogger.info(`Logged in as ${client.user.tag}!`);
@@ -53,7 +32,7 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', (message) => {
-  verifications.verifyNewMessage(message, client);
+  messageVerificator.verifyNewMessage(message, client);
 });
 
 client.login(globals.getClientToken())

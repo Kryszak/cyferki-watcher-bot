@@ -17,8 +17,10 @@
     "chalk": "4.1.2",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
+    "inversify": "^6.0.1",
     "loglevel": "^1.8.0",
-    "loglevel-plugin-prefix": "^0.8.4"
+    "loglevel-plugin-prefix": "^0.8.4",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/jest": "^28.1.1",

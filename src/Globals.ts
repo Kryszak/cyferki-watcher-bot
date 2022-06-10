@@ -1,5 +1,8 @@
 import 'dotenv/config'
+import "reflect-metadata";
+import {injectable} from "inversify";
 
+@injectable()
 export default class Globals {
   getClientToken(): string {
     return process.env.CLIENT_TOKEN;

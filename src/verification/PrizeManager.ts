@@ -2,7 +2,10 @@ import Globals from "../Globals";
 import RoleAdder from "../discord/RoleAdder";
 import NumbersUnderVerification from "./NumbersUnderVerification";
 import MessageFetcher from "../discord/MessageFetcher";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
 export default class PrizeManager {
   private globals: Globals;
   private roleAdder: RoleAdder;

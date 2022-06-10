@@ -1,7 +1,10 @@
 import Globals from "../Globals";
 import ChannelUtils from "../discord/ChannelUtils";
 import MessageSender from "../discord/MessageSender";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
 export default class GameoverManager {
   private globals: Globals;
   private channelUtils: ChannelUtils;

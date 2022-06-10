@@ -2,8 +2,10 @@ import MessageFetcher from "./MessageFetcher";
 import MessageSender from "./MessageSender";
 import {GuildMember, Role} from "discord.js";
 import LoggerFactory from "../logging/LoggerFactory";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
-
+@injectable()
 export default class RoleAdder {
   private messageFetcher: MessageFetcher;
   private messageSender: MessageSender;

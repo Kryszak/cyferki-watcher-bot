@@ -1,5 +1,8 @@
-export default class MessageUtils {
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
+export default class MessageUtils {
     isSentFromUser(message): boolean {
         return !message.author.bot;
     }

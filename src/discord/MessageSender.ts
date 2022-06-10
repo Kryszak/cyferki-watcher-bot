@@ -1,6 +1,9 @@
 import Globals from "../Globals";
 import LoggerFactory from "../logging/LoggerFactory";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
 export default class MessageSender {
   private globals: Globals;
   private loggerFactory: LoggerFactory;

@@ -7,7 +7,10 @@ import NumbersUnderVerification from "./NumbersUnderVerification";
 import PrizeManager from "./PrizeManager";
 import ErrorHandler from "./ErrorHandler";
 import GameoverManager from "./GameoverManager";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
 export default class MessageVerificator {
   private readonly WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
   private readonly WRONG_NUMBER_POSTED_ERROR = Error('WRONG_NUMBER');

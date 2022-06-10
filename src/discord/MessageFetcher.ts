@@ -1,6 +1,8 @@
 import Globals from "../Globals";
 import MessageUtils from "./MessageUtils";
+import {injectable} from "inversify";
 
+@injectable()
 export default class MessageFetcher {
   private globals: Globals;
   private messageUtils: MessageUtils;

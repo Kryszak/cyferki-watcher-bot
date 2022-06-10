@@ -1,7 +1,10 @@
 import MessageFetcher from "../discord/MessageFetcher";
 import MessageSender from "../discord/MessageSender";
 import LoggerFactory from "../logging/LoggerFactory";
+import {injectable} from "inversify";
+import "reflect-metadata";
 
+@injectable()
 export default class ErrorHandler {
   private messageFetcher: MessageFetcher;
   private messageSender: MessageSender;
