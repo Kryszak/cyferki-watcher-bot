@@ -1,4 +1,3 @@
-// TODO test coverage
 export default class NumbersUnderVerification {
   previousNumber: number;
   currentNumber: number;

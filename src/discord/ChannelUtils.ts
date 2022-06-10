@@ -15,8 +15,12 @@ export default class {
     return client.channels.cache.get(message.channelId);
   }
 
-  isSentToWatchedChannel(channel) {
+  isSentToWatchedChannel(channel): boolean {
     return channel.name === this.globals.getWatchedChannel();
+  }
+
+  getWatchedChannelName(): string {
+    return this.globals.getWatchedChannel();
   }
 
   removeSendMessagePermissions(channel) {

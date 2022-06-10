@@ -5,7 +5,7 @@ export default class Globals {
     return process.env.CLIENT_TOKEN;
   }
 
-  getWatchedChannel() {
+  getWatchedChannel(): string {
     return process.env.WATCHED_CHANNEL;
   }
 
@@ -13,27 +13,27 @@ export default class Globals {
     return JSON.parse(process.env.RANKS);
   }
 
-  getGameoverNumber() {
+  getGameoverNumber(): number {
     return parseInt(process.env.GAMEOVER_NUMBER);
   }
 
-  getReadMessagesCount() {
+  getReadMessagesCount(): number {
     return parseInt(process.env.MESSAGE_READ_COUNT) || 20;
   }
 
-  getWrongIncrementMessage() {
+  getWrongIncrementMessage(): string {
     return process.env.BOT_WRONG_NUMBER_MESSAGE;
   }
 
-  getWrongMessageContent() {
+  getWrongMessageContent(): string {
     return process.env.BOT_WRONG_MESSAGE_FORMAT;
   }
 
-  getRankWonMessageContent() {
+  getRankWonMessageContent(): string {
     return process.env.BOT_RANK_WON_MESSAGE;
   }
 
-  getGameOverMessageContent() {
+  getGameOverMessageContent(): string {
     return process.env.BOT_GAME_OVER_MESSAGE;
   }
 

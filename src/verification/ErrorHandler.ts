@@ -17,14 +17,15 @@ export default class ErrorHandler {
     this.logger = this.loggerFactory.getLogger('root');
   }
 
-  // TODO cover with tests
   handleError(error: Error, channel, lastMessage) {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     switch (error.message) {
       case 'WRONG_MESSAGE_FORMAT':
+        this.logger.debug('Handling wrong format error');
         this.handleWrongMessageFormat(channel, lastMessage);
         break;
       case 'WRONG_NUMBER':
+        this.logger.debug('Handling wrong number error');
         this.handleWrongNumber(channel, lastMessage);
         break;
       default:

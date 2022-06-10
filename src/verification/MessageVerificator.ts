@@ -46,13 +46,13 @@ export default class MessageVerificator {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     const channel = this.channelUtils.getChannel(client, lastMessage);
     if (this.channelUtils.isSentToWatchedChannel(channel) && this.messageUtils.isSentFromUser(lastMessage)) {
-      this.logger.info(`Verifying message="${lastMessage.content}" sent to channel ${this.globals.getWatchedChannel()} by ${lastMessage.author.username}`);
+      this.logger.info(`Verifying message="${lastMessage.content}" sent to channel ${this.channelUtils.getWatchedChannelName()} by ${lastMessage.author.username}`);
       this.tryMessageVerifications(lastMessage, channel)
         .finally(() => this.logger.info(`Finished verification of message="${lastMessage.content}" from ${lastMessage.author.username}`));
     }
   }
 
-  async tryMessageVerifications(lastMessage, channel) {
+  private async tryMessageVerifications(lastMessage, channel) {
     try {
       await this.runMessageVerifications(lastMessage, channel);
     } catch (error) {
@@ -60,7 +60,7 @@ export default class MessageVerificator {
     }
   }
 
-  async runMessageVerifications(lastMessage, channel) {
+  private async runMessageVerifications(lastMessage, channel) {
     const messages = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
     const checkedNumbers = this.extractNumbersForChecks(messages);
     const lastTwoNumbers = new NumbersUnderVerification(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
