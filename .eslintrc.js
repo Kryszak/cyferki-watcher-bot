@@ -11,6 +11,16 @@ module.exports = {
   'rules': {
     'require-jsdoc': 0,
     'max-len': 0,
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/typedef": [
+      "error",
+      {
+        "variableDeclaration": true,
+        "memberVariableDeclaration": true,
+        "parameter": true,
+        "propertyDeclaration": true,
+      }
+    ]
   },
   "parser": "@typescript-eslint/parser",
   "plugins": [

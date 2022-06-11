@@ -4,6 +4,7 @@ import {GuildChannel, GuildMember, Message, Role} from "discord.js";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import {Logger} from "loglevel";
 
 @injectable()
 export default class RoleAdder {
@@ -20,7 +21,7 @@ export default class RoleAdder {
   }
 
   addRoleToUser(message: Message, roleId: string): void {
-    const logger = this.loggerFactory.getLogger(message.guild.name);
+    const logger: Logger = this.loggerFactory.getLogger(message.guild.name);
     try {
       logger.info(`Adding roleId=${roleId} to user=${message.author.username}`);
       if (!this.hasRole(message.member, roleId)) {
@@ -42,7 +43,7 @@ export default class RoleAdder {
     }
   }
 
-  private hasRole(member: GuildMember, roleId): boolean {
+  private hasRole(member: GuildMember, roleId: string): boolean {
     return !!member.roles.cache.find((role: Role) => role.id === roleId);
   }
 }

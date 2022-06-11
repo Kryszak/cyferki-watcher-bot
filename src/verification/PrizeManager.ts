@@ -1,6 +1,6 @@
 import Globals from "../Globals";
 import RoleAdder from "../discord/RoleAdder";
-import NumbersUnderVerification from "./NumbersUnderVerification";
+import VerifiedNumbers from "./VerifiedNumbers";
 import MessageFetcher from "../discord/MessageFetcher";
 import {injectable} from "inversify";
 import "reflect-metadata";
@@ -20,10 +20,10 @@ export default class PrizeManager {
     this.messageFetcher = messageFetcher;
   }
 
-  checkForWonRole(lastTwoNumbers: NumbersUnderVerification, lastMessage: Message): void {
+  checkForWonRole(lastTwoNumbers: VerifiedNumbers, lastMessage: Message): void {
     if (lastTwoNumbers.currentNumber in this.globals.getRanks()) {
       this.messageFetcher.fetchMessage(lastMessage).then(() => {
-        const wonRoleId = this.globals.getRanks()[lastTwoNumbers.currentNumber];
+        const wonRoleId: string = this.globals.getRanks()[lastTwoNumbers.currentNumber];
         this.roleAdder.addRoleToUser(lastMessage, wonRoleId);
       });
     }

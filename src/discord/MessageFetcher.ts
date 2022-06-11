@@ -15,8 +15,8 @@ export default class MessageFetcher {
   }
 
   async getLastMessagesFromWatchedChannel(channel: GuildChannel): Promise<Array<Message>> {
-    const count = this.globals.getReadMessagesCount()
-    const fetchedMessages = Array.from((await (channel as TextChannel).messages.fetch({limit: count})).values());
+    const count: number = this.globals.getReadMessagesCount()
+    const fetchedMessages: Array<Message> = Array.from((await (channel as TextChannel).messages.fetch({limit: count})).values());
     return Array.from(
       fetchedMessages.reverse().filter((msg) => this.messageUtils.isSentFromUser(msg)).values()
     ).slice(-count)

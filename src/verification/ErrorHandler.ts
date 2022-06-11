@@ -5,6 +5,7 @@ import {injectable} from "inversify";
 import "reflect-metadata";
 import MessageDeleter from "../discord/MessageDeleter";
 import {GuildChannel, Message} from "discord.js";
+import {Logger} from "loglevel";
 
 @injectable()
 export default class ErrorHandler {
@@ -12,7 +13,7 @@ export default class ErrorHandler {
   private messageSender: MessageSender;
   private messageDeleter: MessageDeleter;
   private loggerFactory: LoggerFactory;
-  private logger;
+  private logger: Logger;
 
   constructor(messageFetcher: MessageFetcher,
               messageSender: MessageSender,

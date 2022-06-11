@@ -2,7 +2,7 @@ import PrizeManager from "../../src/verification/PrizeManager";
 import Globals from "../../src/Globals";
 import RoleAdder from "../../src/discord/RoleAdder";
 import MessageFetcher from "../../src/discord/MessageFetcher";
-import NumbersUnderVerification from "../../src/verification/NumbersUnderVerification";
+import VerifiedNumbers from "../../src/verification/VerifiedNumbers";
 import mocked = jest.mocked;
 
 jest.mock('../../src/discord/RoleAdder')
@@ -26,7 +26,7 @@ const mockedMessageFetcher = mocked(new MessageFetcher(null, null))
 const subject = new PrizeManager(mockGlobals, mockedRoleAdder, mockedMessageFetcher);
 
 test('Should not process number without rank', async () => {
-  const lastTwoNumbers = new NumbersUnderVerification(4, 5);
+  const lastTwoNumbers = new VerifiedNumbers(4, 5);
   const lastMessage = {};
 
   await subject.checkForWonRole(lastTwoNumbers, lastMessage);
@@ -36,7 +36,7 @@ test('Should not process number without rank', async () => {
 })
 
 test('Should process number with rank', async () => {
-  const lastTwoNumbers = new NumbersUnderVerification(9, 10);
+  const lastTwoNumbers = new VerifiedNumbers(9, 10);
   const lastMessage = {};
 
   mockedMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());

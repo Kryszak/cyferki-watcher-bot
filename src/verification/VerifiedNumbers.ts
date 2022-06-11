@@ -1,4 +1,4 @@
-export default class NumbersUnderVerification {
+export default class VerifiedNumbers {
   previousNumber: number;
   currentNumber: number;
 

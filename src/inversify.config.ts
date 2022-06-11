@@ -12,7 +12,7 @@ import Globals from "./Globals";
 import GameoverManager from "./verification/GameoverManager";
 import MessageDeleter from "./discord/MessageDeleter";
 
-const container = new Container();
+const container: Container = new Container();
 container.bind<Globals>(Globals).toSelf();
 container.bind<ChannelUtils>(ChannelUtils).toSelf();
 container.bind<MessageFetcher>(MessageFetcher).toSelf();

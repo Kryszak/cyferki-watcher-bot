@@ -3,17 +3,18 @@ import MessageUtils from "../discord/MessageUtils";
 import LoggerFactory from "../logging/LoggerFactory";
 import ChannelUtils from "../discord/ChannelUtils";
 import MessageFetcher from "../discord/MessageFetcher";
-import NumbersUnderVerification from "./NumbersUnderVerification";
+import VerifiedNumbers from "./VerifiedNumbers";
 import PrizeManager from "./PrizeManager";
 import ErrorHandler from "./ErrorHandler";
 import GameoverManager from "./GameoverManager";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import {Logger} from "loglevel";
 
 @injectable()
 export default class MessageVerificator {
-  private readonly WRONG_MESSAGE_FORMAT_ERROR = Error('WRONG_MESSAGE_FORMAT');
-  private readonly WRONG_NUMBER_POSTED_ERROR = Error('WRONG_NUMBER');
+  private readonly WRONG_MESSAGE_FORMAT_ERROR: Error = Error('WRONG_MESSAGE_FORMAT');
+  private readonly WRONG_NUMBER_POSTED_ERROR: Error = Error('WRONG_NUMBER');
 
   private messageUtils: MessageUtils;
   private messageFetcher: MessageFetcher;
@@ -22,7 +23,7 @@ export default class MessageVerificator {
   private gameoverManager: GameoverManager;
   private errorHandler: ErrorHandler;
   private loggerFactory: LoggerFactory;
-  private logger;
+  private logger: Logger;
 
   constructor(messageUtils: MessageUtils,
               messageFetcher: MessageFetcher,
@@ -43,7 +44,7 @@ export default class MessageVerificator {
 
   verifyNewMessage(lastMessage: Message, client: Client): void {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
-    const channel = this.channelUtils.getChannel(client, lastMessage);
+    const channel: GuildChannel = this.channelUtils.getChannel(client, lastMessage);
     if (this.channelUtils.isSentToWatchedChannel(channel) && this.messageUtils.isSentFromUser(lastMessage)) {
       this.logger.info(`Verifying message="${lastMessage.content}" sent to channel ${this.channelUtils.getWatchedChannelName()} by ${lastMessage.author.username}`);
       this.tryMessageVerifications(lastMessage, channel)
@@ -61,8 +62,8 @@ export default class MessageVerificator {
 
   private async runMessageVerifications(lastMessage: Message, channel: GuildChannel): Promise<void> {
     const messages: Array<Message> = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
-    const checkedNumbers = this.extractNumbersForChecks(messages);
-    const lastTwoNumbers = new NumbersUnderVerification(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
+    const checkedNumbers: Array<number> = this.extractNumbersForChecks(messages);
+    const lastTwoNumbers: VerifiedNumbers = new VerifiedNumbers(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
     if (lastTwoNumbers.areBothNumbersAbsent()) {
       if (this.allMessagesDoesNotContainNumbers(messages)) {
         this.logger.warn('Skipping further validation as counting doesn\'t start yet');
@@ -101,13 +102,13 @@ export default class MessageVerificator {
   }
 
   private handleDuplicatedLastMessages(checkedNumbers: Array<number>,
-                                       lastTwoNumbers: NumbersUnderVerification,
+                                       lastTwoNumbers: VerifiedNumbers,
                                        messages: Array<Message>): Message {
     this.logger.debug('Last two numbers are the same, checking further');
-    const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
+    const previousValidNumber: number = checkedNumbers.filter((number: number) => number !== lastTwoNumbers.currentNumber).pop();
     this.logger.debug(`Last valid number: ${previousValidNumber}`);
-    const duplicatedMessages = this.getDuplicatedMessages(messages, lastTwoNumbers.currentNumber);
-    const correctedLastMessage = duplicatedMessages.shift();
+    const duplicatedMessages: Array<Message> = this.getDuplicatedMessages(messages, lastTwoNumbers.currentNumber);
+    const correctedLastMessage: Message = duplicatedMessages.shift();
     duplicatedMessages.forEach((msg: Message) => {
       this.logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
       this.errorHandler.handleWrongNumber(msg.channel as GuildChannel, msg);
@@ -118,7 +119,7 @@ export default class MessageVerificator {
 
   private getDuplicatedMessages(messages: Array<Message>, currentNumber: number): Array<Message> {
     return Array.from(
-      messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber.toString())).values()
+      messages.filter((msg: Message) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber.toString())).values()
     );
   }
 }

@@ -2,7 +2,8 @@ import Globals from "../Globals";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
-import {GuildChannel} from "discord.js";
+import {Client, GuildChannel, Message} from "discord.js";
+import {Logger} from "loglevel";
 
 @injectable()
 export default class {
@@ -15,8 +16,8 @@ export default class {
     this.loggerFactory = loggerFactory;
   }
 
-  getChannel(client, message): GuildChannel {
-    return client.channels.cache.get(message.channelId);
+  getChannel(client: Client, message: Message): GuildChannel {
+    return client.channels.cache.get(message.channelId) as GuildChannel;
   }
 
   isSentToWatchedChannel(channel: GuildChannel): boolean {
@@ -28,11 +29,11 @@ export default class {
   }
 
   removeSendMessagePermissions(channel: GuildChannel): void {
-    const logger = this.loggerFactory.getLogger(channel.guild.name);
+    const logger: Logger = this.loggerFactory.getLogger(channel.guild.name);
     logger.info('Locking channel after finished game.');
     channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
       SEND_MESSAGES: false,
     }).then(() => logger.info('Channel locked after finished game.'))
-      .catch((error) => logger.error('Failed to lock channel.', error));
+      .catch((error: Error) => logger.error('Failed to lock channel.', error));
   }
 }

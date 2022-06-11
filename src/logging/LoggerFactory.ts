@@ -8,7 +8,7 @@ import "reflect-metadata";
 
 @injectable()
 export default class LoggerFactory {
-  private static readonly COLORS = {
+  private static readonly COLORS: any = {
     TRACE: chalk.magenta,
     DEBUG: chalk.gray,
     INFO: chalk.blue,
@@ -23,29 +23,29 @@ export default class LoggerFactory {
     this.initializeLoggerFactory();
   }
 
-  getLogger(name): Logger {
+  getLogger(name: string): Logger {
     return loglevel.getLogger(name);
   }
 
   private initializeLoggerFactory(): void {
     prefix.reg(loglevel);
     prefix.apply(loglevel, {
-      format(level, name, timestamp) {
+      format(level: string, name: string, timestamp: Date) {
         return `${LoggerFactory.formatTimestamp(timestamp)} ${LoggerFactory.formatLevel(level)} ${LoggerFactory.formatName(name)}:`;
       },
     });
     loglevel.setLevel(this.getLogLevel());
   }
 
-  private static formatTimestamp(timestamp): string {
+  private static formatTimestamp(timestamp: Date): string {
     return chalk.gray(`[${timestamp}]`);
   }
 
-  private static formatLevel(level): string {
+  private static formatLevel(level: string): string {
     return this.COLORS[level.toUpperCase()](level.padEnd(5));
   }
 
-  private static formatName(name): string {
+  private static formatName(name: string): string {
     return chalk.green(`[${name}]`);
   }
 
