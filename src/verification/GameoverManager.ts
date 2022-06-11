@@ -3,6 +3,7 @@ import ChannelUtils from "../discord/ChannelUtils";
 import MessageSender from "../discord/MessageSender";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import {GuildChannel} from "discord.js";
 
 @injectable()
 export default class GameoverManager {
@@ -18,7 +19,7 @@ export default class GameoverManager {
     this.messageSender = messageSender;
   }
 
-  checkForGameOver(verifiedNumber: number, channel): void {
+  checkForGameOver(verifiedNumber: number, channel: GuildChannel): void {
     if (verifiedNumber === this.globals.getGameoverNumber()) {
       new Promise((resolve) => {
         setTimeout(resolve.bind(null, this.messageSender.notifyGameOver(channel)), 3000);

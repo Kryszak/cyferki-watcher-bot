@@ -1,4 +1,4 @@
-import {Client, Message} from "discord.js";
+import {Client, GuildChannel, Message} from "discord.js";
 import MessageUtils from "../discord/MessageUtils";
 import LoggerFactory from "../logging/LoggerFactory";
 import ChannelUtils from "../discord/ChannelUtils";
@@ -51,7 +51,7 @@ export default class MessageVerificator {
     }
   }
 
-  private async tryMessageVerifications(lastMessage: Message, channel): Promise<void> {
+  private async tryMessageVerifications(lastMessage: Message, channel: GuildChannel): Promise<void> {
     try {
       await this.runMessageVerifications(lastMessage, channel);
     } catch (error) {
@@ -59,7 +59,7 @@ export default class MessageVerificator {
     }
   }
 
-  private async runMessageVerifications(lastMessage: Message, channel): Promise<void> {
+  private async runMessageVerifications(lastMessage: Message, channel: GuildChannel): Promise<void> {
     const messages: Array<Message> = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
     const checkedNumbers = this.extractNumbersForChecks(messages);
     const lastTwoNumbers = new NumbersUnderVerification(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
@@ -89,11 +89,11 @@ export default class MessageVerificator {
       throw this.WRONG_NUMBER_POSTED_ERROR;
     }
     this.prizeManager.checkForWonRole(lastTwoNumbers, lastMessage);
-    this.gameoverManager.checkForGameOver(lastTwoNumbers.currentNumber, lastMessage.channel);
+    this.gameoverManager.checkForGameOver(lastTwoNumbers.currentNumber, lastMessage.channel as GuildChannel);
   }
 
-  private extractNumbersForChecks(messages): Array<number> {
-    return messages.map((message) => this.messageUtils.extractNumberFromMessage(message));
+  private extractNumbersForChecks(messages: Array<Message>): Array<number> {
+    return messages.map((message: Message) => this.messageUtils.extractNumberFromMessage(message));
   }
 
   private allMessagesDoesNotContainNumbers(messages: Array<Message>): boolean {
@@ -110,7 +110,7 @@ export default class MessageVerificator {
     const correctedLastMessage = duplicatedMessages.shift();
     duplicatedMessages.forEach((msg: Message) => {
       this.logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
-      this.errorHandler.handleWrongNumber(msg.channel, msg);
+      this.errorHandler.handleWrongNumber(msg.channel as GuildChannel, msg);
     });
     lastTwoNumbers.previousNumber = previousValidNumber;
     return correctedLastMessage;

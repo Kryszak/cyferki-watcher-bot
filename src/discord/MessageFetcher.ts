@@ -1,7 +1,7 @@
 import Globals from "../Globals";
 import MessageUtils from "./MessageUtils";
 import {injectable} from "inversify";
-import {Message} from "discord.js";
+import {GuildChannel, Message, TextChannel} from "discord.js";
 
 @injectable()
 export default class MessageFetcher {
@@ -14,15 +14,15 @@ export default class MessageFetcher {
     this.messageUtils = messageUtils;
   }
 
-  async getLastMessagesFromWatchedChannel(channel): Promise<Array<Message>> {
+  async getLastMessagesFromWatchedChannel(channel: GuildChannel): Promise<Array<Message>> {
     const count = this.globals.getReadMessagesCount()
-    const fetchedMessages: Array<Message> = await channel.messages.fetch({limit: count});
+    const fetchedMessages = Array.from((await (channel as TextChannel).messages.fetch({limit: count})).values());
     return Array.from(
       fetchedMessages.reverse().filter((msg) => this.messageUtils.isSentFromUser(msg)).values()
     ).slice(-count)
   }
 
-  fetchMessage(message) {
+  fetchMessage(message: Message): Promise<Message> {
     return message.channel.messages.fetch(message.id);
   }
 }

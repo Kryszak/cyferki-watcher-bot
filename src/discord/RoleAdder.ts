@@ -1,6 +1,6 @@
 import MessageFetcher from "./MessageFetcher";
 import MessageSender from "./MessageSender";
-import {GuildMember, Message, Role} from "discord.js";
+import {GuildChannel, GuildMember, Message, Role} from "discord.js";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
@@ -26,7 +26,7 @@ export default class RoleAdder {
       if (!this.hasRole(message.member, roleId)) {
         this.messageFetcher.fetchMessage(message)
           .then(() => {
-            this.messageSender.notifyPrizedNumber(message.channel, message.author.id, roleId);
+            this.messageSender.notifyPrizedNumber(message.channel as GuildChannel, message.author.id, roleId);
           })
           .then(() => {
             return message.member.roles.add(roleId);

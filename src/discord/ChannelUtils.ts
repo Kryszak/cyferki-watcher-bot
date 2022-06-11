@@ -2,6 +2,7 @@ import Globals from "../Globals";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import {GuildChannel} from "discord.js";
 
 @injectable()
 export default class {
@@ -14,11 +15,11 @@ export default class {
     this.loggerFactory = loggerFactory;
   }
 
-  getChannel(client, message) {
+  getChannel(client, message): GuildChannel {
     return client.channels.cache.get(message.channelId);
   }
 
-  isSentToWatchedChannel(channel): boolean {
+  isSentToWatchedChannel(channel: GuildChannel): boolean {
     return channel.name === this.globals.getWatchedChannel();
   }
 
@@ -26,7 +27,7 @@ export default class {
     return this.globals.getWatchedChannel();
   }
 
-  removeSendMessagePermissions(channel): void {
+  removeSendMessagePermissions(channel: GuildChannel): void {
     const logger = this.loggerFactory.getLogger(channel.guild.name);
     logger.info('Locking channel after finished game.');
     channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
