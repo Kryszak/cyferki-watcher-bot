@@ -10,19 +10,19 @@ export default class MessageSender {
     this.globals = globals;
   }
 
-  notifyWrongNumberProvided(channel, authorId) {
+  notifyWrongNumberProvided(channel, authorId): void {
     channel.send(`<@${authorId}> ${this.globals.getWrongIncrementMessage()}`);
   }
 
-  notifyWrongMessageFormat(channel, authorId) {
+  notifyWrongMessageFormat(channel, authorId): void {
     channel.send(`<@${authorId}> ${this.globals.getWrongMessageContent()}`);
   }
 
-  notifyPrizedNumber(channel, authorId, roleId) {
+  notifyPrizedNumber(channel, authorId, roleId): void {
     channel.send(`<@${authorId}>, ${this.globals.getRankWonMessageContent()} <@&${roleId}>!`);
   }
 
-  notifyGameOver(channel) {
+  notifyGameOver(channel): Promise<void> {
     return channel.send(this.globals.getGameOverMessageContent());
   }
 }

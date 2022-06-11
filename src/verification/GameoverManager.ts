@@ -18,7 +18,7 @@ export default class GameoverManager {
     this.messageSender = messageSender;
   }
 
-  checkForGameOver(verifiedNumber, channel) {
+  checkForGameOver(verifiedNumber, channel): void {
     if (verifiedNumber === this.globals.getGameoverNumber()) {
       new Promise((resolve) => {
         setTimeout(resolve.bind(null, this.messageSender.notifyGameOver(channel)), 3000);

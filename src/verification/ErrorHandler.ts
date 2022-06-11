@@ -24,7 +24,7 @@ export default class ErrorHandler {
     this.logger = this.loggerFactory.getLogger('root');
   }
 
-  handleError(error: Error, channel, lastMessage) {
+  handleError(error: Error, channel, lastMessage): void {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     switch (error.message) {
       case 'WRONG_MESSAGE_FORMAT':
@@ -41,14 +41,14 @@ export default class ErrorHandler {
     }
   }
 
-  handleWrongNumber(channel, lastMessage) {
+  handleWrongNumber(channel, lastMessage): void {
     this.messageFetcher.fetchMessage(lastMessage).then(() => {
       this.messageSender.notifyWrongNumberProvided(channel, lastMessage.author.id);
       this.messageDeleter.deleteMessage(lastMessage);
     });
   }
 
-  private handleWrongMessageFormat(channel, lastMessage) {
+  private handleWrongMessageFormat(channel, lastMessage): void {
     this.messageSender.notifyWrongMessageFormat(channel, lastMessage.author.id);
     this.messageDeleter.deleteMessage(lastMessage);
   }

@@ -1,6 +1,6 @@
 import Globals from "../Globals";
 import * as loglevel from 'loglevel';
-import {LogLevelDesc} from 'loglevel';
+import {Logger, LogLevelDesc} from 'loglevel';
 import * as prefix from 'loglevel-plugin-prefix';
 import * as chalk from 'chalk';
 import {injectable} from "inversify";
@@ -23,11 +23,11 @@ export default class LoggerFactory {
     this.initializeLoggerFactory();
   }
 
-  getLogger(name) {
+  getLogger(name): Logger {
     return loglevel.getLogger(name);
   }
 
-  private initializeLoggerFactory() {
+  private initializeLoggerFactory(): void {
     prefix.reg(loglevel);
     prefix.apply(loglevel, {
       format(level, name, timestamp) {
@@ -37,15 +37,15 @@ export default class LoggerFactory {
     loglevel.setLevel(this.getLogLevel());
   }
 
-  private static formatTimestamp(timestamp) {
+  private static formatTimestamp(timestamp): string {
     return chalk.gray(`[${timestamp}]`);
   }
 
-  private static formatLevel(level) {
+  private static formatLevel(level): string {
     return this.COLORS[level.toUpperCase()](level.padEnd(5));
   }
 
-  private static formatName(name) {
+  private static formatName(name): string {
     return chalk.green(`[${name}]`);
   }
 

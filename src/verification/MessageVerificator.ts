@@ -41,7 +41,7 @@ export default class MessageVerificator {
     this.logger = this.loggerFactory.getLogger('root');
   }
 
-  verifyNewMessage(lastMessage, client) {
+  verifyNewMessage(lastMessage, client): void {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     const channel = this.channelUtils.getChannel(client, lastMessage);
     if (this.channelUtils.isSentToWatchedChannel(channel) && this.messageUtils.isSentFromUser(lastMessage)) {
@@ -51,7 +51,7 @@ export default class MessageVerificator {
     }
   }
 
-  private async tryMessageVerifications(lastMessage, channel) {
+  private async tryMessageVerifications(lastMessage, channel): Promise<void> {
     try {
       await this.runMessageVerifications(lastMessage, channel);
     } catch (error) {
@@ -59,7 +59,7 @@ export default class MessageVerificator {
     }
   }
 
-  private async runMessageVerifications(lastMessage, channel) {
+  private async runMessageVerifications(lastMessage, channel): Promise<void> {
     const messages = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
     const checkedNumbers = this.extractNumbersForChecks(messages);
     const lastTwoNumbers = new NumbersUnderVerification(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
@@ -92,11 +92,11 @@ export default class MessageVerificator {
     this.gameoverManager.checkForGameOver(lastTwoNumbers.currentNumber, lastMessage.channel);
   }
 
-  private extractNumbersForChecks(messages) {
+  private extractNumbersForChecks(messages): Array<number> {
     return messages.map((message) => this.messageUtils.extractNumberFromMessage(message));
   }
 
-  private allMessagesDoesNotContainNumbers(messages) {
+  private allMessagesDoesNotContainNumbers(messages): boolean {
     return messages.every((msg) => !this.messageUtils.isContainingNumber(msg));
   }
 
@@ -104,7 +104,7 @@ export default class MessageVerificator {
     this.logger.debug('Last two numbers are the same, checking further');
     const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
     this.logger.debug(`Last valid number: ${previousValidNumber}`);
-    const duplicatedMessages = this.getDuplicatedNumbers(messages, lastTwoNumbers.currentNumber);
+    const duplicatedMessages = this.getDuplicatedMessages(messages, lastTwoNumbers.currentNumber);
     const correctedLastMessage = duplicatedMessages.shift();
     duplicatedMessages.forEach((msg: Message) => {
       this.logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
@@ -114,7 +114,7 @@ export default class MessageVerificator {
     return correctedLastMessage;
   }
 
-  private getDuplicatedNumbers(messages, currentNumber) {
+  private getDuplicatedMessages(messages, currentNumber) {
     return Array.from(messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber)).values());
   }
 }

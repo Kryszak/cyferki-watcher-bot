@@ -10,7 +10,7 @@ export default class MessageDeleter {
     this.loggerFactory = loggerFactory;
   }
 
-  deleteMessage(message) {
+  deleteMessage(message): void {
     const logger = this.loggerFactory.getLogger(message.guild.name);
     logger.info(`Removing message from ${message.author.username}: ${message.content}`);
     message.delete()

@@ -19,7 +19,7 @@ export default class PrizeManager {
     this.messageFetcher = messageFetcher;
   }
 
-  checkForWonRole(lastTwoNumbers: NumbersUnderVerification, lastMessage) {
+  checkForWonRole(lastTwoNumbers: NumbersUnderVerification, lastMessage): void {
     if (lastTwoNumbers.currentNumber in this.globals.getRanks()) {
       this.messageFetcher.fetchMessage(lastMessage).then(() => {
         const wonRoleId = this.globals.getRanks()[lastTwoNumbers.currentNumber];
