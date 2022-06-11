@@ -15,7 +15,7 @@ const mockGlobals: jest.Mocked<Globals> = {
   getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 
-const subject = new MessageSender(mockGlobals, new LoggerFactory(mockGlobals));
+const subject = new MessageSender(mockGlobals);
 
 test('Should send message about wrong number', () => {
   const mockedSend = jest.fn();
@@ -63,22 +63,4 @@ test('Should send message about game over', () => {
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('gameOverMsg');
-});
-
-test('Should delete message', () => {
-  const mockedDelete = jest.fn(() => Promise.resolve());
-  const message = {
-    'guild': {
-      'name': 'test guild',
-    },
-    'author': {
-      'username': 'test author',
-    },
-    'content': 'test content',
-    'delete': mockedDelete,
-  };
-
-  subject.deleteMessage(message);
-
-  expect(mockedDelete).toHaveBeenCalledTimes(1);
 });

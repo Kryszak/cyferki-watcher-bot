@@ -3,19 +3,23 @@ import MessageSender from "../discord/MessageSender";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import MessageDeleter from "../discord/MessageDeleter";
 
 @injectable()
 export default class ErrorHandler {
   private messageFetcher: MessageFetcher;
   private messageSender: MessageSender;
+  private messageDeleter: MessageDeleter;
   private loggerFactory: LoggerFactory;
   private logger;
 
   constructor(messageFetcher: MessageFetcher,
               messageSender: MessageSender,
+              messageDeleter: MessageDeleter,
               loggerFactory: LoggerFactory) {
     this.messageFetcher = messageFetcher;
     this.messageSender = messageSender;
+    this.messageDeleter = messageDeleter;
     this.loggerFactory = loggerFactory;
     this.logger = this.loggerFactory.getLogger('root');
   }
@@ -40,12 +44,12 @@ export default class ErrorHandler {
   handleWrongNumber(channel, lastMessage) {
     this.messageFetcher.fetchMessage(lastMessage).then(() => {
       this.messageSender.notifyWrongNumberProvided(channel, lastMessage.author.id);
-      this.messageSender.deleteMessage(lastMessage);
+      this.messageDeleter.deleteMessage(lastMessage);
     });
   }
 
   private handleWrongMessageFormat(channel, lastMessage) {
     this.messageSender.notifyWrongMessageFormat(channel, lastMessage.author.id);
-    this.messageSender.deleteMessage(lastMessage);
+    this.messageDeleter.deleteMessage(lastMessage);
   }
 }

@@ -9,11 +9,13 @@ import MessageUtils from "../../src/discord/MessageUtils";
 import PrizeManager from "../../src/verification/PrizeManager";
 import ErrorHandler from "../../src/verification/ErrorHandler";
 import GameoverManager from "../../src/verification/GameoverManager";
+import MessageDeleter from "../../src/discord/MessageDeleter";
 import mocked = jest.mocked;
 
 jest.useFakeTimers();
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
+jest.mock("../../src/discord/MessageDeleter");
 jest.mock("../../src/discord/RoleAdder");
 
 const channelName = 'watched channel';
@@ -69,13 +71,14 @@ const mockGlobals: jest.Mocked<Globals> = {
 }
 const loggerFactory = new LoggerFactory(mockGlobals);
 const messageUtils = new MessageUtils();
-const mockMessageSender = mocked(new MessageSender(mockGlobals, loggerFactory));
+const mockMessageSender = mocked(new MessageSender(mockGlobals));
 const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
+const mockMessageDeleter = mocked(new MessageDeleter(loggerFactory));
 const roleAdder = new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
 const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher);
 const gameoverManager = new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender);
-const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, loggerFactory);
+const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, mockMessageDeleter, loggerFactory);
 const subject = new MessageVerificator(
   messageUtils,
   mockMessageFetcher,
@@ -87,7 +90,7 @@ const subject = new MessageVerificator(
 );
 
 afterEach(() => {
-  mockMessageSender.deleteMessage.mockClear();
+  mockMessageDeleter.deleteMessage.mockClear();
   mockMessageSender.notifyWrongNumberProvided.mockClear();
   mockMessageSender.notifyWrongMessageFormat.mockClear();
 });
@@ -123,8 +126,8 @@ test('Verify wrong message format handling', async () => {
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify wrong number posted handling', async () => {
@@ -145,8 +148,8 @@ test('Verify wrong number posted handling', async () => {
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify empty channel - writing rules', async () => {
@@ -205,8 +208,8 @@ test('Verify error thrown on wrong channel state', async () => {
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify first number posted after rules', () => {
@@ -241,8 +244,8 @@ test('Verify error thrown on wrong first number', async () => {
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify handling of duplicates', async () => {
@@ -262,8 +265,8 @@ test('Verify handling of duplicates', async () => {
   await waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(2);
-  expect(mockMessageSender.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(2);
+  expect(mockMessageDeleter.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
 });
 
 test('Verify rank granted for prized number', async () => {

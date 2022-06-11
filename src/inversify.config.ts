@@ -10,6 +10,7 @@ import PrizeManager from "./verification/PrizeManager";
 import MessageVerificator from "./verification/MessageVerificator";
 import Globals from "./Globals";
 import GameoverManager from "./verification/GameoverManager";
+import MessageDeleter from "./discord/MessageDeleter";
 
 const container = new Container();
 container.bind<Globals>(Globals).toSelf();
@@ -23,5 +24,6 @@ container.bind<ErrorHandler>(ErrorHandler).toSelf();
 container.bind<PrizeManager>(PrizeManager).toSelf();
 container.bind<GameoverManager>(GameoverManager).toSelf();
 container.bind<MessageVerificator>(MessageVerificator).toSelf();
+container.bind<MessageDeleter>(MessageDeleter).toSelf();
 
 export {container};

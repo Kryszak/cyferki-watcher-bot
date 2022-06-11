@@ -3,10 +3,12 @@ import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
 import MessageSender from "../../src/discord/MessageSender";
 import MessageFetcher from "../../src/discord/MessageFetcher";
+import MessageDeleter from "../../src/discord/MessageDeleter";
 import mocked = jest.mocked;
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
+jest.mock("../../src/discord/MessageDeleter");
 
 const channel = {};
 const lastMessage = {
@@ -32,12 +34,13 @@ const mockGlobals: jest.Mocked<Globals> = {
 }
 
 const loggerFactory = new LoggerFactory(mockGlobals);
-const mockMessageSender = mocked(new MessageSender(mockGlobals, undefined));
+const mockMessageSender = mocked(new MessageSender(mockGlobals));
 const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, undefined));
-const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, loggerFactory);
+const mockMessageDeleter = mocked(new MessageDeleter(loggerFactory));
+const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, mockMessageDeleter, loggerFactory);
 
 afterEach(() => {
-  mockMessageSender.deleteMessage.mockClear();
+  mockMessageDeleter.deleteMessage.mockClear();
 });
 
 test('Should handle WRONG_MESSAGE_FORMAT', () => {
@@ -47,8 +50,8 @@ test('Should handle WRONG_MESSAGE_FORMAT', () => {
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Should handle WRONG_NUMBER', async () => {
@@ -61,6 +64,6 @@ test('Should handle WRONG_NUMBER', async () => {
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.deleteMessage).toHaveBeenCalledWith(lastMessage);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
