@@ -2,6 +2,9 @@
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
 
+## Deployment
+[Heroku](https://dashboard.heroku.com/apps/cyferki-watcher-bot)
+
 ## Required bot user permissions
 - Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work ⚠️
 - Read Messages/View Channels
