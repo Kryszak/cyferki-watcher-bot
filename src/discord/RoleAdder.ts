@@ -1,6 +1,6 @@
 import MessageFetcher from "./MessageFetcher";
 import MessageSender from "./MessageSender";
-import {GuildMember, Role} from "discord.js";
+import {GuildMember, Message, Role} from "discord.js";
 import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
@@ -19,16 +19,21 @@ export default class RoleAdder {
     this.loggerFactory = loggerFactory;
   }
 
-  addRoleToUser(message, roleId): void {
+  addRoleToUser(message: Message, roleId: string): void {
     const logger = this.loggerFactory.getLogger(message.guild.name);
     try {
       logger.info(`Adding roleId=${roleId} to user=${message.author.username}`);
       if (!this.hasRole(message.member, roleId)) {
-        this.messageFetcher.fetchMessage(message).then(() => {
-          this.messageSender.notifyPrizedNumber(message.channel, message.author.id, roleId);
-          message.member.roles.add(roleId);
-          logger.info(`Successfully added roleId=${roleId} to user=${message.author.username}`);
-        });
+        this.messageFetcher.fetchMessage(message)
+          .then(() => {
+            this.messageSender.notifyPrizedNumber(message.channel, message.author.id, roleId);
+          })
+          .then(() => {
+            return message.member.roles.add(roleId);
+          })
+          .finally(() => {
+            logger.info(`Successfully added roleId=${roleId} to user=${message.author.username}`);
+          });
       } else {
         logger.warn(`User ${message.author.username} already has roleId=${roleId}!`);
       }

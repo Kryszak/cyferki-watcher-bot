@@ -4,6 +4,7 @@ import NumbersUnderVerification from "./NumbersUnderVerification";
 import MessageFetcher from "../discord/MessageFetcher";
 import {injectable} from "inversify";
 import "reflect-metadata";
+import {Message} from "discord.js";
 
 @injectable()
 export default class PrizeManager {
@@ -19,7 +20,7 @@ export default class PrizeManager {
     this.messageFetcher = messageFetcher;
   }
 
-  checkForWonRole(lastTwoNumbers: NumbersUnderVerification, lastMessage): void {
+  checkForWonRole(lastTwoNumbers: NumbersUnderVerification, lastMessage: Message): void {
     if (lastTwoNumbers.currentNumber in this.globals.getRanks()) {
       this.messageFetcher.fetchMessage(lastMessage).then(() => {
         const wonRoleId = this.globals.getRanks()[lastTwoNumbers.currentNumber];

@@ -5,6 +5,7 @@ import MessageSender from "../../src/discord/MessageSender";
 import MessageFetcher from "../../src/discord/MessageFetcher";
 import MessageDeleter from "../../src/discord/MessageDeleter";
 import mocked = jest.mocked;
+import TestUtils from "../TestUtils";
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -60,7 +61,7 @@ test('Should handle WRONG_NUMBER', async () => {
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   errorHandler.handleError(error, channel, lastMessage);
-  await Promise.resolve();
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);

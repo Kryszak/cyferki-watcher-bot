@@ -10,15 +10,15 @@ export default class MessageSender {
     this.globals = globals;
   }
 
-  notifyWrongNumberProvided(channel, authorId): void {
+  notifyWrongNumberProvided(channel, authorId: string): void {
     channel.send(`<@${authorId}> ${this.globals.getWrongIncrementMessage()}`);
   }
 
-  notifyWrongMessageFormat(channel, authorId): void {
+  notifyWrongMessageFormat(channel, authorId: string): void {
     channel.send(`<@${authorId}> ${this.globals.getWrongMessageContent()}`);
   }
 
-  notifyPrizedNumber(channel, authorId, roleId): void {
+  notifyPrizedNumber(channel, authorId: string, roleId: string): void {
     channel.send(`<@${authorId}>, ${this.globals.getRankWonMessageContent()} <@&${roleId}>!`);
   }
 

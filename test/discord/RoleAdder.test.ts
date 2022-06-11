@@ -3,8 +3,9 @@ import MessageFetcher from "../../src/discord/MessageFetcher";
 import MessageSender from "../../src/discord/MessageSender";
 import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
-import mocked = jest.mocked;
 import MessageUtils from "../../src/discord/MessageUtils";
+import mocked = jest.mocked;
+import TestUtils from "../TestUtils";
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -23,13 +24,13 @@ const mockGlobals: jest.Mocked<Globals> = {
 }
 const messageUtils = new MessageUtils();
 const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
-const mockMessageSender = mocked(new MessageSender(mockGlobals, new LoggerFactory(mockGlobals)));
+const mockMessageSender = mocked(new MessageSender(mockGlobals));
 
 const subject = new RoleAdder(mockMessageFetcher, mockMessageSender, new LoggerFactory(mockGlobals));
 
 test('Should add role to user if user doesn\'t have it yet', async () => {
   const mockedAdd = jest.fn();
-  const roleId = 12;
+  const roleId = '12';
   const message = {
     'channel': {},
     'guild': {
@@ -50,7 +51,8 @@ test('Should add role to user if user doesn\'t have it yet', async () => {
   };
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
-  await subject.addRoleToUser(message, roleId);
+  await subject.addRoleToUser(message as any, roleId);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledWith({}, 'id', roleId);

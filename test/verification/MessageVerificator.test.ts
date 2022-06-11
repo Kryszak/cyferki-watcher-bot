@@ -11,6 +11,7 @@ import ErrorHandler from "../../src/verification/ErrorHandler";
 import GameoverManager from "../../src/verification/GameoverManager";
 import MessageDeleter from "../../src/discord/MessageDeleter";
 import mocked = jest.mocked;
+import TestUtils from "../TestUtils";
 
 jest.useFakeTimers();
 jest.mock("../../src/discord/MessageFetcher");
@@ -46,16 +47,6 @@ const client = {
     },
   },
 };
-
-/*
- for some reason this allows to wait for nested async code, needs to be called
- seems like it needs to be called *depth* times depending on how many nested async functions are called
-*/
-const waitForAsyncCalls = async (depth) => {
-  for (let i = 0; i < depth; i++) {
-    await Promise.resolve();
-  }
-}
 
 const mockGlobals: jest.Mocked<Globals> = {
   getClientToken: undefined,
@@ -122,7 +113,7 @@ test('Verify wrong message format handling', async () => {
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   await subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(1);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -144,7 +135,7 @@ test('Verify wrong number posted handling', async () => {
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   await subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(2);
+  await TestUtils.waitForAsyncCalls(2);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -204,7 +195,7 @@ test('Verify error thrown on wrong channel state', async () => {
   mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
   subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(1);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -240,7 +231,7 @@ test('Verify error thrown on wrong first number', async () => {
   mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
   await subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(1);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -262,7 +253,7 @@ test('Verify handling of duplicates', async () => {
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   await subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(1);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
   expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(2);
@@ -283,7 +274,7 @@ test('Verify rank granted for prized number', async () => {
   mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
 
   await subject.verifyNewMessage(lastMessage, client);
-  await waitForAsyncCalls(1);
+  await TestUtils.waitForAsyncCalls(1);
 
   expect(roleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
 });

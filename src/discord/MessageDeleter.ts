@@ -1,6 +1,7 @@
 import {injectable} from "inversify";
 import "reflect-metadata";
 import LoggerFactory from "../logging/LoggerFactory";
+import {Message} from "discord.js";
 
 @injectable()
 export default class MessageDeleter {
@@ -10,7 +11,7 @@ export default class MessageDeleter {
     this.loggerFactory = loggerFactory;
   }
 
-  deleteMessage(message): void {
+  deleteMessage(message: Message): void {
     const logger = this.loggerFactory.getLogger(message.guild.name);
     logger.info(`Removing message from ${message.author.username}: ${message.content}`);
     message.delete()

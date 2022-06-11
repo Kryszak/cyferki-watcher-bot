@@ -4,6 +4,7 @@ import LoggerFactory from "../logging/LoggerFactory";
 import {injectable} from "inversify";
 import "reflect-metadata";
 import MessageDeleter from "../discord/MessageDeleter";
+import {Message} from "discord.js";
 
 @injectable()
 export default class ErrorHandler {
@@ -24,7 +25,7 @@ export default class ErrorHandler {
     this.logger = this.loggerFactory.getLogger('root');
   }
 
-  handleError(error: Error, channel, lastMessage): void {
+  handleError(error: Error, channel, lastMessage: Message): void {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     switch (error.message) {
       case 'WRONG_MESSAGE_FORMAT':
@@ -41,14 +42,14 @@ export default class ErrorHandler {
     }
   }
 
-  handleWrongNumber(channel, lastMessage): void {
+  handleWrongNumber(channel, lastMessage: Message): void {
     this.messageFetcher.fetchMessage(lastMessage).then(() => {
       this.messageSender.notifyWrongNumberProvided(channel, lastMessage.author.id);
       this.messageDeleter.deleteMessage(lastMessage);
     });
   }
 
-  private handleWrongMessageFormat(channel, lastMessage): void {
+  private handleWrongMessageFormat(channel, lastMessage: Message): void {
     this.messageSender.notifyWrongMessageFormat(channel, lastMessage.author.id);
     this.messageDeleter.deleteMessage(lastMessage);
   }

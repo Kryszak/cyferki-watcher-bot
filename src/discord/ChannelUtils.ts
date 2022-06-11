@@ -26,7 +26,7 @@ export default class {
     return this.globals.getWatchedChannel();
   }
 
-  removeSendMessagePermissions(channel) {
+  removeSendMessagePermissions(channel): void {
     const logger = this.loggerFactory.getLogger(channel.guild.name);
     logger.info('Locking channel after finished game.');
     channel.permissionOverwrites.edit(channel.guild.roles.everyone, {

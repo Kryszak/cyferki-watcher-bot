@@ -1,4 +1,4 @@
-import {Message} from "discord.js";
+import {Client, Message} from "discord.js";
 import MessageUtils from "../discord/MessageUtils";
 import LoggerFactory from "../logging/LoggerFactory";
 import ChannelUtils from "../discord/ChannelUtils";
@@ -41,7 +41,7 @@ export default class MessageVerificator {
     this.logger = this.loggerFactory.getLogger('root');
   }
 
-  verifyNewMessage(lastMessage, client): void {
+  verifyNewMessage(lastMessage: Message, client: Client): void {
     this.logger = this.loggerFactory.getLogger(lastMessage.guild.name);
     const channel = this.channelUtils.getChannel(client, lastMessage);
     if (this.channelUtils.isSentToWatchedChannel(channel) && this.messageUtils.isSentFromUser(lastMessage)) {
@@ -51,7 +51,7 @@ export default class MessageVerificator {
     }
   }
 
-  private async tryMessageVerifications(lastMessage, channel): Promise<void> {
+  private async tryMessageVerifications(lastMessage: Message, channel): Promise<void> {
     try {
       await this.runMessageVerifications(lastMessage, channel);
     } catch (error) {
@@ -59,8 +59,8 @@ export default class MessageVerificator {
     }
   }
 
-  private async runMessageVerifications(lastMessage, channel): Promise<void> {
-    const messages = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
+  private async runMessageVerifications(lastMessage: Message, channel): Promise<void> {
+    const messages: Array<Message> = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
     const checkedNumbers = this.extractNumbersForChecks(messages);
     const lastTwoNumbers = new NumbersUnderVerification(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
     if (lastTwoNumbers.areBothNumbersAbsent()) {
@@ -96,11 +96,13 @@ export default class MessageVerificator {
     return messages.map((message) => this.messageUtils.extractNumberFromMessage(message));
   }
 
-  private allMessagesDoesNotContainNumbers(messages): boolean {
-    return messages.every((msg) => !this.messageUtils.isContainingNumber(msg));
+  private allMessagesDoesNotContainNumbers(messages: Array<Message>): boolean {
+    return messages.every((msg: Message) => !this.messageUtils.isContainingNumber(msg));
   }
 
-  private handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages) {
+  private handleDuplicatedLastMessages(checkedNumbers: Array<number>,
+                                       lastTwoNumbers: NumbersUnderVerification,
+                                       messages: Array<Message>): Message {
     this.logger.debug('Last two numbers are the same, checking further');
     const previousValidNumber = checkedNumbers.filter((number) => number !== lastTwoNumbers.currentNumber).pop();
     this.logger.debug(`Last valid number: ${previousValidNumber}`);
@@ -114,7 +116,9 @@ export default class MessageVerificator {
     return correctedLastMessage;
   }
 
-  private getDuplicatedMessages(messages, currentNumber) {
-    return Array.from(messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber)).values());
+  private getDuplicatedMessages(messages: Array<Message>, currentNumber: number): Array<Message> {
+    return Array.from(
+      messages.filter((msg) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber.toString())).values()
+    );
   }
 }
