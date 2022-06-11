@@ -18,7 +18,7 @@ export default class MessageFetcher {
     const count: number = this.globals.getReadMessagesCount()
     const fetchedMessages: Array<Message> = Array.from((await (channel as TextChannel).messages.fetch({limit: count})).values());
     return Array.from(
-      fetchedMessages.reverse().filter((msg) => this.messageUtils.isSentFromUser(msg)).values()
+      [...fetchedMessages].reverse().filter((msg) => this.messageUtils.isSentFromUser(msg)).values()
     ).slice(-count)
   }
 
