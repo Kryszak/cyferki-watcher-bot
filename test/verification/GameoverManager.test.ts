@@ -3,6 +3,7 @@ import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
 import MessageSender from "../../src/discord/MessageSender";
 import ChannelUtils from "../../src/discord/ChannelUtils";
+import {GuildChannel} from "discord.js";
 import mocked = jest.mocked;
 
 jest.useFakeTimers();
@@ -24,7 +25,7 @@ const mockGlobals: jest.Mocked<Globals> = {
 
 const loggerFactory = new LoggerFactory(mockGlobals);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
-const mockMessageSender = mocked(new MessageSender(mockGlobals, loggerFactory));
+const mockMessageSender = mocked(new MessageSender(mockGlobals));
 const gameoverManager = new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender);
 
 afterEach(() => {
@@ -32,13 +33,13 @@ afterEach(() => {
 });
 
 test('Should handle game over', () => {
-  gameoverManager.checkForGameOver(20, {});
+  gameoverManager.checkForGameOver(20, {} as GuildChannel);
 
   expect(mockMessageSender.notifyGameOver).toHaveBeenCalledTimes(1);
 });
 
 test('Should do nothing if gameover number is not posted', () => {
-  gameoverManager.checkForGameOver(10, {});
+  gameoverManager.checkForGameOver(10, {} as GuildChannel);
 
   expect(mockMessageSender.notifyGameOver).not.toHaveBeenCalled();
 });

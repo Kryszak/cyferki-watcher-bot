@@ -1,4 +1,5 @@
 import MessageUtils from '../../src/discord/MessageUtils';
+import {Message} from "discord.js";
 
 const subject = new MessageUtils();
 
@@ -9,7 +10,7 @@ test('Should return true for message sent from user', () => {
     },
   };
 
-  expect(subject.isSentFromUser(message)).toBeTruthy();
+  expect(subject.isSentFromUser(message as Message)).toBeTruthy();
 });
 
 test('Should return false for message sent from bot', () => {
@@ -19,7 +20,7 @@ test('Should return false for message sent from bot', () => {
     },
   };
 
-  expect(subject.isSentFromUser(message)).toBeFalsy();
+  expect(subject.isSentFromUser(message as Message)).toBeFalsy();
 });
 
 test('Should return true if message contains valid number', () => {
@@ -27,7 +28,7 @@ test('Should return true if message contains valid number', () => {
     'content': '123 asdf testing correct message',
   };
 
-  expect(subject.isContainingNumber(message)).toBeTruthy();
+  expect(subject.isContainingNumber(message as Message)).toBeTruthy();
 });
 
 test('Should return false if message doesn\'t contain valid number', () => {
@@ -35,7 +36,7 @@ test('Should return false if message doesn\'t contain valid number', () => {
     'content': 'asdf testing incorrect message',
   };
 
-  expect(subject.isContainingNumber(message)).toBeFalsy();
+  expect(subject.isContainingNumber(message as Message)).toBeFalsy();
 });
 
 test('Should return number if message contains valid number', () => {
@@ -43,7 +44,7 @@ test('Should return number if message contains valid number', () => {
     'content': '123 asdf testing correct message',
   };
 
-  expect(subject.extractNumberFromMessage(message)).toBe(123);
+  expect(subject.extractNumberFromMessage(message as Message)).toBe(123);
 });
 
 test('Should return NaN if message doesn\'t contain valid number', () => {
@@ -51,5 +52,5 @@ test('Should return NaN if message doesn\'t contain valid number', () => {
     'content': 'asdf testing incorrect message',
   };
 
-  expect(subject.extractNumberFromMessage(message)).toBeNaN();
+  expect(subject.extractNumberFromMessage(message as Message)).toBeNaN();
 });

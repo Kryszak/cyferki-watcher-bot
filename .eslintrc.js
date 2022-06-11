@@ -15,10 +15,11 @@ module.exports = {
     "@typescript-eslint/typedef": [
       "error",
       {
-        "variableDeclaration": true,
+        // "variableDeclaration": true,
         "memberVariableDeclaration": true,
         "parameter": true,
         "propertyDeclaration": true,
+        "variableDeclarationIgnoreFunction": true
       }
     ]
   },

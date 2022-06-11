@@ -4,8 +4,9 @@ import MessageSender from "../../src/discord/MessageSender";
 import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
 import MessageUtils from "../../src/discord/MessageUtils";
-import mocked = jest.mocked;
 import TestUtils from "../TestUtils";
+import {Message} from "discord.js";
+import mocked = jest.mocked;
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -49,9 +50,9 @@ test('Should add role to user if user doesn\'t have it yet', async () => {
       },
     },
   };
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
+  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(message as unknown as Message));
 
-  await subject.addRoleToUser(message as any, roleId);
+  await subject.addRoleToUser(message as unknown as Message, roleId);
   await TestUtils.waitForAsyncCalls(1);
 
   expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledTimes(1);
@@ -79,7 +80,7 @@ test('Should not add role to user if user already has it', async () => {
     },
   };
 
-  await subject.addRoleToUser(message, 12);
+  await subject.addRoleToUser(message as unknown as Message, '12');
 
   expect(mockedAdd).not.toHaveBeenCalled();
 });

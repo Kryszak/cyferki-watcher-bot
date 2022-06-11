@@ -1,6 +1,7 @@
 import ChannelUtils from "../../src/discord/ChannelUtils";
 import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
+import {Client, GuildChannel, Message} from "discord.js";
 
 const channelName = 'watched';
 
@@ -17,20 +18,20 @@ const mockGlobals: jest.Mocked<Globals> = {
   getWrongMessageContent: undefined
 }
 
-const subject = new ChannelUtils(mockGlobals, new LoggerFactory(mockGlobals));
+const subject: ChannelUtils = new ChannelUtils(mockGlobals, new LoggerFactory(mockGlobals));
 
 test('Should return true for watched channel', () => {
   const channel = {
     'name': channelName,
   };
-  expect(subject.isSentToWatchedChannel(channel)).toBeTruthy();
+  expect(subject.isSentToWatchedChannel(channel as GuildChannel)).toBeTruthy();
 });
 
 test('Should return false for not watched channel', () => {
   const channel = {
     'name': 'general',
   };
-  expect(subject.isSentToWatchedChannel(channel)).toBeFalsy();
+  expect(subject.isSentToWatchedChannel(channel as GuildChannel)).toBeFalsy();
 });
 
 test('Should override permissions for channel', () => {
@@ -44,7 +45,7 @@ test('Should override permissions for channel', () => {
       'roles': {'everyone': true},
     },
   };
-  subject.removeSendMessagePermissions(channel);
+  subject.removeSendMessagePermissions(channel as unknown as GuildChannel);
 
   expect(mockedEdit.mock.calls.length).toBe(1);
 });
@@ -63,7 +64,7 @@ test('Should return requested channel', () => {
     'channelId': 123456,
   };
 
-  subject.getChannel(client, message);
+  subject.getChannel(client as unknown as Client, message as unknown as Message);
 
   expect(mockedGetChannel).toHaveBeenCalledTimes(1);
   expect(mockedGetChannel).toHaveBeenCalledWith(123456);

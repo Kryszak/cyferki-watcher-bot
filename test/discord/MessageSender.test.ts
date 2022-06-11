@@ -1,6 +1,6 @@
 import MessageSender from '../../src/discord/MessageSender';
 import Globals from "../../src/Globals";
-import LoggerFactory from "../../src/logging/LoggerFactory";
+import {GuildChannel} from "discord.js";
 
 const mockGlobals: jest.Mocked<Globals> = {
   getClientToken: undefined,
@@ -23,7 +23,7 @@ test('Should send message about wrong number', () => {
     'send': mockedSend,
   };
 
-  subject.notifyWrongNumberProvided(channel, 123456);
+  subject.notifyWrongNumberProvided(channel as unknown as GuildChannel, '123456');
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongIncrementMsg');
@@ -35,7 +35,7 @@ test('Should send message about wrong message format', () => {
     'send': mockedSend,
   };
 
-  subject.notifyWrongMessageFormat(channel, 123456);
+  subject.notifyWrongMessageFormat(channel as unknown as GuildChannel, '123456');
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456> wrongMsg');
@@ -47,7 +47,7 @@ test('Should send message about won rank', () => {
     'send': mockedSend,
   };
 
-  subject.notifyPrizedNumber(channel, 123456, 12);
+  subject.notifyPrizedNumber(channel as unknown as GuildChannel, '123456', '12');
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('<@123456>, rankWonMsg <@&12>!');
@@ -59,7 +59,7 @@ test('Should send message about game over', () => {
     'send': mockedSend,
   };
 
-  subject.notifyGameOver(channel);
+  subject.notifyGameOver(channel as unknown as GuildChannel);
 
   expect(mockedSend).toHaveBeenCalledTimes(1);
   expect(mockedSend).toHaveBeenCalledWith('gameOverMsg');

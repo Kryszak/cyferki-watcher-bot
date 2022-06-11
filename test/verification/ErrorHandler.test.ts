@@ -4,14 +4,15 @@ import LoggerFactory from "../../src/logging/LoggerFactory";
 import MessageSender from "../../src/discord/MessageSender";
 import MessageFetcher from "../../src/discord/MessageFetcher";
 import MessageDeleter from "../../src/discord/MessageDeleter";
-import mocked = jest.mocked;
 import TestUtils from "../TestUtils";
+import {GuildChannel, Message} from "discord.js";
+import mocked = jest.mocked;
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
 jest.mock("../../src/discord/MessageDeleter");
 
-const channel = {};
+const channel: GuildChannel = {} as GuildChannel;
 const lastMessage = {
   'guild': {
     'name': 'test guild'
@@ -19,7 +20,7 @@ const lastMessage = {
   'author': {
     'id': 'id'
   }
-};
+} as Message;
 
 const mockGlobals: jest.Mocked<Globals> = {
   getClientToken: undefined,
@@ -58,7 +59,7 @@ test('Should handle WRONG_MESSAGE_FORMAT', () => {
 test('Should handle WRONG_NUMBER', async () => {
   const error = new Error('WRONG_NUMBER');
 
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve());
+  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve({} as Message));
 
   errorHandler.handleError(error, channel, lastMessage);
   await TestUtils.waitForAsyncCalls(1);

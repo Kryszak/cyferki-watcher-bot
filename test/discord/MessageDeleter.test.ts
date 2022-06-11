@@ -1,6 +1,7 @@
 import MessageDeleter from "../../src/discord/MessageDeleter";
 import Globals from "../../src/Globals";
 import LoggerFactory from "../../src/logging/LoggerFactory";
+import {Message} from "discord.js";
 
 const mockGlobals: jest.Mocked<Globals> = {
   getClientToken: undefined,
@@ -29,7 +30,7 @@ test('Should delete message', () => {
     'delete': mockedDelete,
   };
 
-  subject.deleteMessage(message);
+  subject.deleteMessage(message as unknown as Message);
 
   expect(mockedDelete).toHaveBeenCalledTimes(1);
 });

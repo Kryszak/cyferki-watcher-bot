@@ -1,6 +1,7 @@
 import MessageFetcher from '../../src/discord/MessageFetcher';
 import Globals from "../../src/Globals";
 import MessageUtils from "../../src/discord/MessageUtils";
+import {GuildChannel} from "discord.js";
 
 const messageWithoutContent = {
   'guild': {
@@ -58,7 +59,7 @@ test('Should fetch messages with given limit', async () => {
     },
   };
 
-  const fetchedMessages = await subject.getLastMessagesFromWatchedChannel(channel);
+  const fetchedMessages = await subject.getLastMessagesFromWatchedChannel(channel as unknown as GuildChannel);
 
   expect(mockedFetch).toHaveBeenCalledTimes(1);
   expect(mockedFetch).toHaveBeenCalledWith({'limit': 20});
