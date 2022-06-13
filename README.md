@@ -1,5 +1,5 @@
 ![test](https://github.com/Kryszak/cyferki-watcher-bot/actions/workflows/github-actions.yml/badge.svg)
-![Known Vulnerabilities](https://snyk.io/test/github/Kryszak/cyferki-watcher-bot/badge.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/Kryszak/cyferki-watcher-bot/badge.svg)]
 
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
