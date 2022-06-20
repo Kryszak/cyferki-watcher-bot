@@ -6,16 +6,16 @@
 Discord bot guarding rules of game "cyferki" in given channel
 
 ## Rules
-Game rules can be found in [Rules](./game rules.md)
+Game rules can be found in [Rules](./Rules.md)
 
 ## Deployment
 [Heroku](https://dashboard.heroku.com/apps/cyferki-watcher-bot)
 
 ## Required bot user permissions
-- Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work ⚠️
-- Read Messages/View Channels
-- Send Messages
-- Manage Messages
+-  Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work ⚠️
+-  Read Messages/View Channels
+-  Send Messages
+-  Manage Messages
 
 ## local dev config
 ### Config
@@ -32,9 +32,8 @@ RANKS=<JSON with number - rankId entries, e.g. {"10": "973271221112291409", "15"
 GAMEOVER_NUMBER=<Number, on which game will end>
 ```
 ### Config placeholders
-- `{author}` will be substituted with mention to message's author
-- `${role}` will be substituted with mention to won role
-
+-  `{author}` will be substituted with mention to message's author
+-  `${role}` will be substituted with mention to won role
 
 ### Run project
 ```bash
@@ -47,4 +46,4 @@ npm run test
 ```
 
 ## Possible new features
-- Block editing messages
+-  Block editing messages
