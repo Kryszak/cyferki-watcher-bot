@@ -12,16 +12,16 @@ jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
 
 const mockGlobals: jest.Mocked<Globals> = {
-  getClientToken: undefined,
-  getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
-  getGameoverNumber: undefined,
-  getLogLevel: jest.fn().mockReturnValue('debug'),
-  getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
-  getRanks: undefined,
-  getReadMessagesCount: undefined,
-  getWatchedChannel: undefined,
-  getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
-  getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
+    getClientToken: undefined,
+    getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
+    getGameoverNumber: undefined,
+    getLogLevel: jest.fn().mockReturnValue('debug'),
+    getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
+    getRanks: undefined,
+    getReadMessagesCount: undefined,
+    getWatchedChannel: undefined,
+    getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
+    getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 const messageUtils = new MessageUtils();
 const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, messageUtils));
@@ -30,57 +30,57 @@ const mockMessageSender = mocked(new MessageSender(mockGlobals));
 const subject = new RoleAdder(mockMessageFetcher, mockMessageSender, new LoggerFactory(mockGlobals));
 
 test('Should add role to user if user doesn\'t have it yet', async () => {
-  const mockedAdd = jest.fn();
-  const roleId = '12';
-  const message = {
-    'channel': {},
-    'guild': {
-      'name': 'test guild',
-    },
-    'author': {
-      'id': 'id',
-      'username': 'test author',
-    },
-    'member': {
-      'roles': {
-        'add': mockedAdd,
-        'cache': {
-          'find': jest.fn(() => false),
+    const mockedAdd = jest.fn();
+    const roleId = '12';
+    const message = {
+        'channel': {},
+        'guild': {
+            'name': 'test guild',
         },
-      },
-    },
-  };
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(message as unknown as Message));
+        'author': {
+            'id': 'id',
+            'username': 'test author',
+        },
+        'member': {
+            'roles': {
+                'add': mockedAdd,
+                'cache': {
+                    'find': jest.fn(() => false),
+                },
+            },
+        },
+    };
+    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(message as unknown as Message));
 
-  await subject.addRoleToUser(message as unknown as Message, roleId);
-  await TestUtils.waitForAsyncCalls(1);
+    await subject.addRoleToUser(message as unknown as Message, roleId);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledWith({}, 'id', roleId);
-  expect(mockedAdd).toHaveBeenCalledTimes(1);
-  expect(mockedAdd).toHaveBeenCalledWith(roleId);
+    expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledWith({}, 'id', roleId);
+    expect(mockedAdd).toHaveBeenCalledTimes(1);
+    expect(mockedAdd).toHaveBeenCalledWith(roleId);
 });
 
 test('Should not add role to user if user already has it', async () => {
-  const mockedAdd = jest.fn();
-  const message = {
-    'guild': {
-      'name': 'test guild',
-    },
-    'author': {
-      'username': 'test author',
-    },
-    'member': {
-      'roles': {
-        'add': mockedAdd,
-        'cache': {
-          'find': jest.fn(() => true),
+    const mockedAdd = jest.fn();
+    const message = {
+        'guild': {
+            'name': 'test guild',
         },
-      },
-    },
-  };
+        'author': {
+            'username': 'test author',
+        },
+        'member': {
+            'roles': {
+                'add': mockedAdd,
+                'cache': {
+                    'find': jest.fn(() => true),
+                },
+            },
+        },
+    };
 
-  await subject.addRoleToUser(message as unknown as Message, '12');
+    await subject.addRoleToUser(message as unknown as Message, '12');
 
-  expect(mockedAdd).not.toHaveBeenCalled();
+    expect(mockedAdd).not.toHaveBeenCalled();
 });

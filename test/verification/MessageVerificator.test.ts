@@ -22,44 +22,44 @@ jest.mock("../../src/discord/RoleAdder");
 
 const channelName = 'watched channel';
 const channel = {
-  'name': channelName,
-  'messages': {
-    'fetch': () => Promise.resolve(),
-  }
+    'name': channelName,
+    'messages': {
+        'fetch': () => Promise.resolve(),
+    }
 };
 const messageWithoutContent = {
-  'guild': {
-    'name': 'test guild',
-  },
-  'author': {
-    'id': 'id',
-    'bot': false,
-    'username': 'test username',
-  },
-  'channel': channel,
+    'guild': {
+        'name': 'test guild',
+    },
+    'author': {
+        'id': 'id',
+        'bot': false,
+        'username': 'test username',
+    },
+    'channel': channel,
 };
 
 const client = {
-  'channels': {
-    'cache': {
-      'get': () => {
-        return channel;
-      },
+    'channels': {
+        'cache': {
+            'get': () => {
+                return channel;
+            },
+        },
     },
-  },
 } as unknown as Client;
 
 const mockGlobals: jest.Mocked<Globals> = {
-  getClientToken: undefined,
-  getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
-  getGameoverNumber: jest.fn().mockReturnValue(20),
-  getLogLevel: jest.fn().mockReturnValue('debug'),
-  getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
-  getRanks: jest.fn().mockReturnValue({'10': '123'}),
-  getReadMessagesCount: jest.fn().mockReturnValue(20),
-  getWatchedChannel: jest.fn().mockReturnValue(channelName),
-  getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
-  getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
+    getClientToken: undefined,
+    getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
+    getGameoverNumber: jest.fn().mockReturnValue(20),
+    getLogLevel: jest.fn().mockReturnValue('debug'),
+    getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
+    getRanks: jest.fn().mockReturnValue({'10': '123'}),
+    getReadMessagesCount: jest.fn().mockReturnValue(20),
+    getWatchedChannel: jest.fn().mockReturnValue(channelName),
+    getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
+    getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 const loggerFactory = new LoggerFactory(mockGlobals);
 const messageUtils = new MessageUtils();
@@ -72,228 +72,228 @@ const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher
 const gameoverManager = new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender);
 const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, mockMessageDeleter, loggerFactory);
 const subject = new MessageVerificator(
-  messageUtils,
-  mockMessageFetcher,
-  mockChannelUtils,
-  prizeManager,
-  gameoverManager,
-  errorHandler,
-  loggerFactory
+    messageUtils,
+    mockMessageFetcher,
+    mockChannelUtils,
+    prizeManager,
+    gameoverManager,
+    errorHandler,
+    loggerFactory
 );
 
 afterEach(() => {
-  mockMessageDeleter.deleteMessage.mockClear();
-  mockMessageSender.notifyWrongNumberProvided.mockClear();
-  mockMessageSender.notifyWrongMessageFormat.mockClear();
+    mockMessageDeleter.deleteMessage.mockClear();
+    mockMessageSender.notifyWrongNumberProvided.mockClear();
+    mockMessageSender.notifyWrongMessageFormat.mockClear();
 });
 
 test('Verify message handling', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '3',
-  } as unknown as Message;
-  const messages = [{...messageWithoutContent, 'content': '1'},
-    {...messageWithoutContent, 'content': '2'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '3',
+    } as unknown as Message;
+    const messages = [{...messageWithoutContent, 'content': '1'},
+        {...messageWithoutContent, 'content': '2'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
+    expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify wrong message format handling', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': 'qwe',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': 'qwe',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': '1'},
-    {...messageWithoutContent, 'content': '2'},
-    lastMessage] as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
+    const messages = [
+        {...messageWithoutContent, 'content': '1'},
+        {...messageWithoutContent, 'content': '2'},
+        lastMessage] as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-  await subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(1);
+    await subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
+    expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify wrong number posted handling', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '4',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '4',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': '1'},
-    {...messageWithoutContent, 'content': '2'},
-    lastMessage
-  ] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
+    const messages = [
+        {...messageWithoutContent, 'content': '1'},
+        {...messageWithoutContent, 'content': '2'},
+        lastMessage
+    ] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-  await subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(2);
+    await subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(2);
 
-  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
+    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify empty channel - writing rules', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': 'Rules and so on',
-  } as unknown as Message;
-  const messages = [lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': 'Rules and so on',
+    } as unknown as Message;
+    const messages = [lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
+    expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify writing rules', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': 'Rules and so on',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': 'Rules and so on',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': 'Rules line 1'},
-    {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [
+        {...messageWithoutContent, 'content': 'Rules line 1'},
+        {...messageWithoutContent, 'content': 'Rules line 2'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
+    expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify first number posted', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '1',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '1',
+    } as unknown as Message;
 
-  const messages = [lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
+    expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify error thrown on wrong channel state', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': 'Rules and so on',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': 'Rules and so on',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': 'Rules line 1'},
-    {...messageWithoutContent, 'content': '1'},
-    {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [
+        {...messageWithoutContent, 'content': 'Rules line 1'},
+        {...messageWithoutContent, 'content': '1'},
+        {...messageWithoutContent, 'content': 'Rules line 2'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(1);
+    subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
+    expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify first number posted after rules', () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '1',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '1',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': 'Rules line 1'},
-    {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [
+        {...messageWithoutContent, 'content': 'Rules line 1'},
+        {...messageWithoutContent, 'content': 'Rules line 2'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
+    expect(() => subject.verifyNewMessage(lastMessage, client)).not.toThrowError();
 });
 
 test('Verify error thrown on wrong first number', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '2',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '2',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': 'Rules line 1'},
-    {...messageWithoutContent, 'content': 'Rules line 2'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [
+        {...messageWithoutContent, 'content': 'Rules line 1'},
+        {...messageWithoutContent, 'content': 'Rules line 2'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  await subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(1);
+    await subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
-  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
+    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(1);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
 test('Verify handling of duplicates', async () => {
-  const lastMessage = {...messageWithoutContent, 'content': '2 posted'} as unknown as Message;
-  const firstMessage = {...messageWithoutContent, 'content': '1'};
-  const lastValidMessage = {...messageWithoutContent, 'content': '2 last valid'};
+    const lastMessage = {...messageWithoutContent, 'content': '2 posted'} as unknown as Message;
+    const firstMessage = {...messageWithoutContent, 'content': '1'};
+    const lastValidMessage = {...messageWithoutContent, 'content': '2 last valid'};
 
-  const messages = [
-    firstMessage,
-    lastValidMessage,
-    {...messageWithoutContent, 'content': '2 duplicated'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
+    const messages = [
+        firstMessage,
+        lastValidMessage,
+        {...messageWithoutContent, 'content': '2 duplicated'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-  await subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(1);
+    await subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
-  expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(2);
-  expect(mockMessageDeleter.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
+    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
+    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(2);
+    expect(mockMessageDeleter.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
 });
 
 test('Verify rank granted for prized number', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '10',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '10',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': '8'},
-    {...messageWithoutContent, 'content': '9'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-  mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
+    const messages = [
+        {...messageWithoutContent, 'content': '8'},
+        {...messageWithoutContent, 'content': '9'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-  await subject.verifyNewMessage(lastMessage, client);
-  await TestUtils.waitForAsyncCalls(1);
+    await subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(1);
 
-  expect(roleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
+    expect(roleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
 });
 
 test('Verify gameover for last number', async () => {
-  const lastMessage = {
-    ...messageWithoutContent,
-    'content': '20',
-  } as unknown as Message;
+    const lastMessage = {
+        ...messageWithoutContent,
+        'content': '20',
+    } as unknown as Message;
 
-  const messages = [
-    {...messageWithoutContent, 'content': '18'},
-    {...messageWithoutContent, 'content': '19'},
-    lastMessage] as unknown as Array<Message>;
-  mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
+    const messages = [
+        {...messageWithoutContent, 'content': '18'},
+        {...messageWithoutContent, 'content': '19'},
+        lastMessage] as unknown as Array<Message>;
+    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-  await subject.verifyNewMessage(lastMessage, client);
+    await subject.verifyNewMessage(lastMessage, client);
 
-  expect(mockMessageSender.notifyGameOver).toHaveBeenCalledTimes(1);
+    expect(mockMessageSender.notifyGameOver).toHaveBeenCalledTimes(1);
 });

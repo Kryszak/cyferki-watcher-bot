@@ -4,33 +4,33 @@ import LoggerFactory from "../../src/logging/LoggerFactory";
 import {Message} from "discord.js";
 
 const mockGlobals: jest.Mocked<Globals> = {
-  getClientToken: undefined,
-  getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
-  getGameoverNumber: undefined,
-  getLogLevel: jest.fn().mockReturnValue('debug'),
-  getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
-  getRanks: undefined,
-  getReadMessagesCount: undefined,
-  getWatchedChannel: undefined,
-  getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
-  getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
+    getClientToken: undefined,
+    getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
+    getGameoverNumber: undefined,
+    getLogLevel: jest.fn().mockReturnValue('debug'),
+    getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
+    getRanks: undefined,
+    getReadMessagesCount: undefined,
+    getWatchedChannel: undefined,
+    getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
+    getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 const subject = new MessageDeleter(new LoggerFactory(mockGlobals))
 
 test('Should delete message', () => {
-  const mockedDelete = jest.fn(() => Promise.resolve());
-  const message = {
-    'guild': {
-      'name': 'test guild',
-    },
-    'author': {
-      'username': 'test author',
-    },
-    'content': 'test content',
-    'delete': mockedDelete,
-  };
+    const mockedDelete = jest.fn(() => Promise.resolve());
+    const message = {
+        'guild': {
+            'name': 'test guild',
+        },
+        'author': {
+            'username': 'test author',
+        },
+        'content': 'test content',
+        'delete': mockedDelete,
+    };
 
-  subject.deleteMessage(message as unknown as Message);
+    subject.deleteMessage(message as unknown as Message);
 
-  expect(mockedDelete).toHaveBeenCalledTimes(1);
+    expect(mockedDelete).toHaveBeenCalledTimes(1);
 });
