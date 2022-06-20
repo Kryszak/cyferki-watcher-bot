@@ -1,5 +1,6 @@
 ![test](https://github.com/Kryszak/cyferki-watcher-bot/actions/workflows/github-actions.yml/badge.svg)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/72c866122f724b63a756c6c59cd0d879)](https://www.codacy.com/gh/Kryszak/cyferki-watcher-bot/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Kryszak/cyferki-watcher-bot&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/Kryszak/cyferki-watcher-bot/branch/master/graph/badge.svg)](https://codecov.io/gh/Kryszak/cyferki-watcher-bot)
 
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
