@@ -3,6 +3,9 @@
 # cyferki-watcher-bot
 Discord bot guarding rules of game "cyferki" in given channel
 
+## Rules
+Game rules can be found in [Rules](./game_rules.md)
+
 ## Deployment
 [Heroku](https://dashboard.heroku.com/apps/cyferki-watcher-bot)
 
