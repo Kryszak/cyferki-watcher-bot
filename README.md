@@ -21,10 +21,10 @@ In main project directory create `.env` file with following contents:
 ```
 CLIENT_TOKEN=<bot's token>
 BOT_WRONG_NUMBER_MESSAGE=<name of channel to watch>
-BOT_ERROR_MESSAGE=<Content of message sent, when user posts wrong number, e.g. '${author} lease learn to count'>
+BOT_ERROR_MESSAGE=<Content of message sent, when user posts wrong number, e.g. '${author} learn learn to count'>
 BOT_WRONG_MESSAGE_FORMAT=<Content of message sent, when user posts message in wrong format, 
-e.g. 'Read game rules - message was not correct'>
-BOT_RANK_WON_MESSAGE=<Content of message sent, when user posts message with number winning role e.g. 'congratulations on winning rank',>
+e.g. '${author} read game rules - message was not correct'>
+BOT_RANK_WON_MESSAGE=<Content of message sent, when user posts message with number winning role e.g. '${author}, congratulations on winning rank ${role}!',>
 BOT_GAME_OVER_MESSAGE=<Content of message sent on last number, e.g. 'Game over! Thanks for playing'>
 RANKS=<JSON with number - rankId entries, e.g. {"10": "973271221112291409", "15": "973282436047839262"}> 
 GAMEOVER_NUMBER=<Number, on which game will end>
