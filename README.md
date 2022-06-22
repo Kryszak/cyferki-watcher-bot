@@ -32,7 +32,7 @@ RANKS=<JSON with number - rankId entries, e.g. {"10": "973271221112291409", "15"
 GAMEOVER_NUMBER=<Number, on which game will end>
 ```
 ### Config placeholders
-- `{author}` will be substituted with mention to message's author
+- `${author}` will be substituted with mention to message's author
 - `${role}` will be substituted with mention to won role
 
 ### Run project
