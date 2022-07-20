@@ -101,6 +101,16 @@ export default class MessageVerificator {
         return messages.every((msg: Message) => !this.messageUtils.isContainingNumber(msg));
     }
 
+    /**
+     * Case when multiple users posts the same number simultaneously
+     * This method aims at finding user, that was the quickest one and process his message
+     * Due to Discord message API characteristics and javascript processing model this approach is as close to 
+     * working correctly as possible at a time of writing this
+     * @param checkedNumbers 
+     * @param lastTwoNumbers 
+     * @param messages 
+     * @returns 
+     */
     private handleDuplicatedLastMessages(checkedNumbers: Array<number>,
                                          lastTwoNumbers: VerifiedNumbers,
                                          messages: Array<Message>): Message {
