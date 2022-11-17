@@ -81,6 +81,7 @@ export default class MessageVerificator {
             this.logger.warn(`${lastMessage.author.username} sent message not starting with number.`);
             throw this.WRONG_MESSAGE_FORMAT_ERROR;
         }
+        // TODO this case won't be present if mutex is introduced
         if (lastTwoNumbers.areBothNumbersEqual()) {
             this.logger.warn(`${lastMessage.author.username} posted number equal to previous, proceeding to deal with duplicate.`);
             lastMessage = this.handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages);

@@ -33,6 +33,8 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', (message) => {
+    // TODO should be done exclusively with mutex
+    // https://www.npmjs.com/package/async-mutex
     messageVerificator.verifyNewMessage(message, client);
 });
 
