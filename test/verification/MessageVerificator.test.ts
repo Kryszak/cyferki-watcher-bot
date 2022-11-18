@@ -50,7 +50,7 @@ const client = {
 } as unknown as Client;
 
 const mockGlobals: jest.Mocked<Globals> = {
-    getClientToken: undefined,
+    getClientToken: jest.fn().mockReturnValue('token'),
     getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
     getGameoverNumber: jest.fn().mockReturnValue(20),
     getLogLevel: jest.fn().mockReturnValue('debug'),
@@ -197,7 +197,7 @@ test('Verify error thrown on wrong channel state', async () => {
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
     subject.verifyNewMessage(lastMessage, client);
-    await TestUtils.waitForAsyncCalls(1);
+    await TestUtils.waitForAsyncCalls(2);
 
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -232,8 +232,8 @@ test('Verify error thrown on wrong first number', async () => {
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-    await subject.verifyNewMessage(lastMessage, client);
-    await TestUtils.waitForAsyncCalls(1);
+    subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(3);
 
     expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);

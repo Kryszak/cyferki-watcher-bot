@@ -7,6 +7,7 @@ import MessageDeleter from "../../src/discord/MessageDeleter";
 import TestUtils from "../TestUtils";
 import {GuildChannel, Message} from "discord.js";
 import mocked = jest.mocked;
+import MessageUtils from "../../src/discord/MessageUtils";
 
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
@@ -23,21 +24,21 @@ const lastMessage = {
 } as Message;
 
 const mockGlobals: jest.Mocked<Globals> = {
-    getClientToken: undefined,
+    getClientToken: jest.fn().mockReturnValue('token'),
     getGameOverMessageContent: jest.fn().mockReturnValue('gameOverMsg'),
     getGameoverNumber: jest.fn().mockReturnValue(20),
     getLogLevel: jest.fn().mockReturnValue('debug'),
     getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
     getRanks: jest.fn().mockReturnValue({'10': '123'}),
     getReadMessagesCount: jest.fn().mockReturnValue(20),
-    getWatchedChannel: undefined,
+    getWatchedChannel: jest.fn().mockReturnValue('channelName'),
     getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
     getWrongMessageContent: jest.fn().mockReturnValue('wrongMsg')
 }
 
 const loggerFactory = new LoggerFactory(mockGlobals);
 const mockMessageSender = mocked(new MessageSender(mockGlobals));
-const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, undefined));
+const mockMessageFetcher = mocked(new MessageFetcher(mockGlobals, mocked(new MessageUtils())));
 const mockMessageDeleter = mocked(new MessageDeleter(loggerFactory));
 const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, mockMessageDeleter, loggerFactory);
 
@@ -45,10 +46,10 @@ afterEach(() => {
     mockMessageDeleter.deleteMessage.mockClear();
 });
 
-test('Should handle WRONG_MESSAGE_FORMAT', () => {
+test('Should handle WRONG_MESSAGE_FORMAT', async () => {
     const error = new Error('WRONG_MESSAGE_FORMAT');
 
-    errorHandler.handleError(error, channel, lastMessage);
+    await errorHandler.handleError(error, channel, lastMessage);
 
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);

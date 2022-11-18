@@ -1,7 +1,7 @@
 import Globals from "../Globals";
-import {injectable} from "inversify";
+import { injectable } from "inversify";
 import "reflect-metadata";
-import {GuildChannel, Message, TextChannel} from "discord.js";
+import { GuildChannel, Message, TextChannel } from "discord.js";
 import * as fillTemplate from "es6-dynamic-template";
 
 @injectable()
@@ -12,26 +12,26 @@ export default class MessageSender {
         this.globals = globals;
     }
 
-    notifyWrongNumberProvided(channel: GuildChannel, authorId: string): void {
+    async notifyWrongNumberProvided(channel: GuildChannel, authorId: string): Promise<void> {
         const messageContent = fillTemplate(this.globals.getWrongIncrementMessage(), {
             'author': `<@${authorId}>`
         });
-        this.sendMessage(channel, messageContent);
+        await this.sendMessage(channel, messageContent);
     }
 
-    notifyWrongMessageFormat(channel: GuildChannel, authorId: string): void {
+    async notifyWrongMessageFormat(channel: GuildChannel, authorId: string): Promise<void> {
         const messageContent = fillTemplate(this.globals.getWrongMessageContent(), {
             'author': `<@${authorId}>`
         });
-        this.sendMessage(channel, messageContent);
+        await this.sendMessage(channel, messageContent);
     }
 
-    notifyPrizedNumber(channel: GuildChannel, authorId: string, roleId: string): void {
+    async notifyPrizedNumber(channel: GuildChannel, authorId: string, roleId: string): Promise<void> {
         const messageContent = fillTemplate(this.globals.getRankWonMessageContent(), {
             'author': `<@${authorId}>`,
             'role': `<@&${roleId}>`
         });
-        this.sendMessage(channel, messageContent);
+        await this.sendMessage(channel, messageContent);
     }
 
     notifyGameOver(channel: GuildChannel): Promise<Message> {

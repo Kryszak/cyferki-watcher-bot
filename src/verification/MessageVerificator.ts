@@ -56,7 +56,7 @@ export default class MessageVerificator {
         try {
             await this.runMessageVerifications(lastMessage, channel);
         } catch (error) {
-            this.errorHandler.handleError(error, channel, lastMessage);
+            await this.errorHandler.handleError(error, channel, lastMessage);
         }
     }
 

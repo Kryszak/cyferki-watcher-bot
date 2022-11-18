@@ -12,10 +12,10 @@ export default class MessageDeleter {
         this.loggerFactory = loggerFactory;
     }
 
-    deleteMessage(message: Message): void {
+    async deleteMessage(message: Message): Promise<void> {
         const logger: Logger = this.loggerFactory.getLogger(message.guild.name);
         logger.info(`Removing message from ${message.author.username}: ${message.content}`);
-        message.delete()
+        return await message.delete()
             .then(() => logger.info(`Successfully removed message: ${message.content} from ${message.author.username}`))
             .catch((error: DiscordAPIError) => {
                 if (error.status !== 404) {
