@@ -18,7 +18,7 @@ export default class MessageDeleter {
         message.delete()
             .then(() => logger.info(`Successfully removed message: ${message.content} from ${message.author.username}`))
             .catch((error: DiscordAPIError) => {
-                if (error.httpStatus !== 404) {
+                if (error.status !== 404) {
                     logger.error('Error while removing message: %o', error);
                 }
             });

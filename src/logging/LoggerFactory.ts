@@ -1,9 +1,9 @@
 import Globals from "../Globals";
 import * as loglevel from 'loglevel';
-import {Logger, LogLevelDesc} from 'loglevel';
+import { Logger, LogLevelDesc } from 'loglevel';
 import * as prefix from 'loglevel-plugin-prefix';
 import * as chalk from 'chalk';
-import {injectable} from "inversify";
+import { injectable } from "inversify";
 import "reflect-metadata";
 
 @injectable()

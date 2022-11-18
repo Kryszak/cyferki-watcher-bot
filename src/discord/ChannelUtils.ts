@@ -32,7 +32,7 @@ export default class {
         const logger: Logger = this.loggerFactory.getLogger(channel.guild.name);
         logger.info('Locking channel after finished game.');
         channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-            SEND_MESSAGES: false,
+            SendMessages: false,
         }).then(() => logger.info('Channel locked after finished game.'))
             .catch((error: Error) => logger.error('Failed to lock channel.', error));
     }

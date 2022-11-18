@@ -241,27 +241,6 @@ test('Verify error thrown on wrong first number', async () => {
     expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledWith(lastMessage);
 });
 
-test('Verify handling of duplicates', async () => {
-    const lastMessage = {...messageWithoutContent, 'content': '2 posted'} as unknown as Message;
-    const firstMessage = {...messageWithoutContent, 'content': '1'};
-    const lastValidMessage = {...messageWithoutContent, 'content': '2 last valid'};
-
-    const messages = [
-        firstMessage,
-        lastValidMessage,
-        {...messageWithoutContent, 'content': '2 duplicated'},
-        lastMessage] as unknown as Array<Message>;
-    mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
-    mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
-
-    await subject.verifyNewMessage(lastMessage, client);
-    await TestUtils.waitForAsyncCalls(1);
-
-    expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(2);
-    expect(mockMessageDeleter.deleteMessage).toHaveBeenCalledTimes(2);
-    expect(mockMessageDeleter.deleteMessage).not.toHaveBeenCalledWith(firstMessage, lastMessage);
-});
-
 test('Verify rank granted for prized number', async () => {
     const lastMessage = {
         ...messageWithoutContent,

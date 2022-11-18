@@ -1,10 +1,10 @@
 import LoggerFactory from "./logging/LoggerFactory";
 import Globals from "./Globals";
 import MessageVerificator from "./verification/MessageVerificator";
-import {container} from "./inversify.config";
-import {Client, Guild, Role} from "discord.js";
-import {Logger} from "loglevel";
-
+import { container } from "./inversify.config";
+import { ActivityType, Client, Guild, Role } from "discord.js";
+import { Logger } from "loglevel";
+import { Mutex } from 'async-mutex';
 
 const globals: Globals = container.get<Globals>(Globals);
 const loggerFactory: LoggerFactory = container.get<LoggerFactory>(LoggerFactory);
@@ -22,20 +22,22 @@ function printRolesGrantedForNumberOnServer(server: Guild) {
     logger.debug('REWARD ROLES FOR NUMBERS <<');
 }
 
-const client: Client = new Client({intents: ['GUILDS', 'GUILD_MESSAGES']});
+const client: Client = new Client({ intents: ['Guilds', 'GuildMessages', 'MessageContent'] });
 
 const messageVerificator: MessageVerificator = container.get<MessageVerificator>(MessageVerificator);
 
+const mutex: Mutex = new Mutex();
+
 client.on('ready', () => {
     rootLogger.info(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity('grę w cyferki', {type: 'WATCHING'});
+    client.user.setActivity('grę w cyferki', { type: ActivityType.Watching });
     client.guilds.cache.forEach((server: Guild) => printRolesGrantedForNumberOnServer(server));
 });
 
 client.on('messageCreate', (message) => {
-    // TODO should be done exclusively with mutex
-    // https://www.npmjs.com/package/async-mutex
-    messageVerificator.verifyNewMessage(message, client);
+    mutex.runExclusive(() => {
+        messageVerificator.verifyNewMessage(message, client);
+    });
 });
 
 client.login(globals.getClientToken())

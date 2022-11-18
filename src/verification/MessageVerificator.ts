@@ -81,11 +81,6 @@ export default class MessageVerificator {
             this.logger.warn(`${lastMessage.author.username} sent message not starting with number.`);
             throw this.WRONG_MESSAGE_FORMAT_ERROR;
         }
-        // TODO this case won't be present if mutex is introduced
-        if (lastTwoNumbers.areBothNumbersEqual()) {
-            this.logger.warn(`${lastMessage.author.username} posted number equal to previous, proceeding to deal with duplicate.`);
-            lastMessage = this.handleDuplicatedLastMessages(checkedNumbers, lastTwoNumbers, messages);
-        }
         if (lastTwoNumbers.isCurrentNumberIncorrect()) {
             this.logger.warn(`${lastMessage.author.username} posted wrong number!`);
             throw this.WRONG_NUMBER_POSTED_ERROR;
@@ -100,37 +95,5 @@ export default class MessageVerificator {
 
     private allMessagesDoesNotContainNumbers(messages: Array<Message>): boolean {
         return messages.every((msg: Message) => !this.messageUtils.isContainingNumber(msg));
-    }
-
-    /**
-     * Case when multiple users posts the same number simultaneously
-     * This method aims at finding user, that was the quickest one and process his message
-     * Due to Discord message API characteristics and javascript processing model this approach is as close to 
-     * working correctly as possible at a time of writing this
-     * @param checkedNumbers 
-     * @param lastTwoNumbers 
-     * @param messages 
-     * @returns 
-     */
-    private handleDuplicatedLastMessages(checkedNumbers: Array<number>,
-                                         lastTwoNumbers: VerifiedNumbers,
-                                         messages: Array<Message>): Message {
-        this.logger.debug('Last two numbers are the same, checking further');
-        const previousValidNumber: number = checkedNumbers.filter((number: number) => number !== lastTwoNumbers.currentNumber).pop();
-        this.logger.debug(`Last valid number: ${previousValidNumber}`);
-        const duplicatedMessages: Array<Message> = this.getDuplicatedMessages(messages, lastTwoNumbers.currentNumber);
-        const correctedLastMessage: Message = duplicatedMessages.shift();
-        duplicatedMessages.forEach((msg: Message) => {
-            this.logger.debug(`Removing message=${msg.content} from ${msg.author.username}`);
-            this.errorHandler.handleWrongNumber(msg.channel as GuildChannel, msg);
-        });
-        lastTwoNumbers.previousNumber = previousValidNumber;
-        return correctedLastMessage;
-    }
-
-    private getDuplicatedMessages(messages: Array<Message>, currentNumber: number): Array<Message> {
-        return Array.from(
-            messages.filter((msg: Message) => this.messageUtils.isSentFromUser(msg) && msg.content.includes(currentNumber.toString())).values()
-        );
     }
 }
