@@ -8,6 +8,9 @@ Discord bot guarding rules of game "cyferki" in given channel
 ## Rules
 Game rules can be found in [Rules](./Rules.md)
 
+## Required bot Privileged Gateway Intents
+- Message Content Intent
+
 ## Required bot user permissions
 - Manage Roles :warning: Bot's role must be higher than any role that it sets for this feature to work ⚠️
 - Read Messages/View Channels
