@@ -20,11 +20,11 @@ export default class PrizeManager {
         this.messageFetcher = messageFetcher;
     }
 
-    checkForWonRole(lastTwoNumbers: VerifiedNumbers, lastMessage: Message): void {
+    async checkForWonRole(lastTwoNumbers: VerifiedNumbers, lastMessage: Message): Promise<void> {
         if (lastTwoNumbers.currentNumber in this.globals.getRanks()) {
-            this.messageFetcher.fetchMessage(lastMessage).then(() => {
+            await this.messageFetcher.fetchMessage(lastMessage).then(async () => {
                 const wonRoleId: string = this.globals.getRanks()[lastTwoNumbers.currentNumber];
-                this.roleAdder.addRoleToUser(lastMessage, wonRoleId);
+                await this.roleAdder.addRoleToUser(lastMessage, wonRoleId);
             });
         }
     }

@@ -28,10 +28,10 @@ export default class {
         return this.globals.getWatchedChannel();
     }
 
-    removeSendMessagePermissions(channel: GuildChannel): void {
+    async removeSendMessagePermissions(channel: GuildChannel): Promise<void> {
         const logger: Logger = this.loggerFactory.getLogger(channel.guild.name);
         logger.info('Locking channel after finished game.');
-        channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
+        return await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
             SendMessages: false,
         }).then(() => logger.info('Channel locked after finished game.'))
             .catch((error: Error) => logger.error('Failed to lock channel.', error));

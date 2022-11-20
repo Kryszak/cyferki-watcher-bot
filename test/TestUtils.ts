@@ -8,4 +8,8 @@ export default class TestUtils {
             await Promise.resolve();
         }
     }
+
+    static generateMessageId(): number {
+        return Math.floor(Math.random() * 1000000);
+    }
 }

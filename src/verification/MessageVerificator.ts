@@ -1,4 +1,4 @@
-import {Client, GuildChannel, Message} from "discord.js";
+import { Client, GuildChannel, Message } from "discord.js";
 import MessageUtils from "../discord/MessageUtils";
 import LoggerFactory from "../logging/LoggerFactory";
 import ChannelUtils from "../discord/ChannelUtils";
@@ -7,9 +7,9 @@ import VerifiedNumbers from "./VerifiedNumbers";
 import PrizeManager from "./PrizeManager";
 import ErrorHandler from "./ErrorHandler";
 import GameoverManager from "./GameoverManager";
-import {injectable} from "inversify";
+import { injectable } from "inversify";
 import "reflect-metadata";
-import {Logger} from "loglevel";
+import { Logger } from "loglevel";
 
 @injectable()
 export default class MessageVerificator {
@@ -26,12 +26,12 @@ export default class MessageVerificator {
     private logger: Logger;
 
     constructor(messageUtils: MessageUtils,
-                messageFetcher: MessageFetcher,
-                channelUtils: ChannelUtils,
-                prizeManager: PrizeManager,
-                gameoverManager: GameoverManager,
-                errorHandler: ErrorHandler,
-                loggerFactory: LoggerFactory) {
+        messageFetcher: MessageFetcher,
+        channelUtils: ChannelUtils,
+        prizeManager: PrizeManager,
+        gameoverManager: GameoverManager,
+        errorHandler: ErrorHandler,
+        loggerFactory: LoggerFactory) {
         this.messageUtils = messageUtils;
         this.messageFetcher = messageFetcher;
         this.channelUtils = channelUtils;
@@ -62,7 +62,7 @@ export default class MessageVerificator {
 
     private async runMessageVerifications(lastMessage: Message, channel: GuildChannel): Promise<void> {
         const messages: Array<Message> = await this.messageFetcher.getLastMessagesFromWatchedChannel(channel);
-        const checkedNumbers: Array<number> = this.extractNumbersForChecks(messages);
+        const checkedNumbers: Array<number> = this.extractNumbersForChecks(messages, lastMessage);
         const lastTwoNumbers: VerifiedNumbers = new VerifiedNumbers(checkedNumbers[checkedNumbers.length - 2], checkedNumbers[checkedNumbers.length - 1]);
         if (lastTwoNumbers.areBothNumbersAbsent()) {
             if (this.allMessagesDoesNotContainNumbers(messages)) {
@@ -89,8 +89,10 @@ export default class MessageVerificator {
         this.gameoverManager.checkForGameOver(lastTwoNumbers.currentNumber, lastMessage.channel as GuildChannel);
     }
 
-    private extractNumbersForChecks(messages: Array<Message>): Array<number> {
-        return messages.map((message: Message) => this.messageUtils.extractNumberFromMessage(message));
+    private extractNumbersForChecks(messages: Array<Message>, lastMessage: Message): Array<number> {
+        const lastMessageIndex = messages.findIndex((message: Message) => message.id === lastMessage.id);
+        return messages.slice(0, lastMessageIndex + 1)
+            .map((message: Message) => this.messageUtils.extractNumberFromMessage(message));
     }
 
     private allMessagesDoesNotContainNumbers(messages: Array<Message>): boolean {

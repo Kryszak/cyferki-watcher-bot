@@ -1,9 +1,9 @@
 import Globals from "../Globals";
 import ChannelUtils from "../discord/ChannelUtils";
 import MessageSender from "../discord/MessageSender";
-import {injectable} from "inversify";
+import { injectable } from "inversify";
 import "reflect-metadata";
-import {GuildChannel} from "discord.js";
+import { GuildChannel } from "discord.js";
 
 @injectable()
 export default class GameoverManager {
@@ -12,19 +12,19 @@ export default class GameoverManager {
     private messageSender: MessageSender;
 
     constructor(globals: Globals,
-                channelUtils: ChannelUtils,
-                messageSender: MessageSender) {
+        channelUtils: ChannelUtils,
+        messageSender: MessageSender) {
         this.globals = globals;
         this.channelUtils = channelUtils;
         this.messageSender = messageSender;
     }
 
-    checkForGameOver(verifiedNumber: number, channel: GuildChannel): void {
+    async checkForGameOver(verifiedNumber: number, channel: GuildChannel): Promise<void> {
         if (verifiedNumber === this.globals.getGameoverNumber()) {
             new Promise((resolve) => {
                 setTimeout(resolve.bind(null, this.messageSender.notifyGameOver(channel)), 3000);
-            }).then(() => {
-                this.channelUtils.removeSendMessagePermissions(channel);
+            }).then(async () => {
+                await this.channelUtils.removeSendMessagePermissions(channel);
             });
         }
     }

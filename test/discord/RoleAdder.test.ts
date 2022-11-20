@@ -53,7 +53,7 @@ test('Should add role to user if user doesn\'t have it yet', async () => {
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(message as unknown as Message));
 
     await subject.addRoleToUser(message as unknown as Message, roleId);
-    await TestUtils.waitForAsyncCalls(1);
+    await TestUtils.waitForAsyncCalls(2);
 
     expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyPrizedNumber).toHaveBeenCalledWith({}, 'id', roleId);

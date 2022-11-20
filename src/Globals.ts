@@ -21,7 +21,7 @@ export default class Globals {
     }
 
     getReadMessagesCount(): number {
-        return parseInt(process.env.MESSAGE_READ_COUNT) || 20;
+        return parseInt(process.env.MESSAGE_READ_COUNT) || 50;
     }
 
     getWrongIncrementMessage(): string {

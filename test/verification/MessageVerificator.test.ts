@@ -11,7 +11,7 @@ import ErrorHandler from "../../src/verification/ErrorHandler";
 import GameoverManager from "../../src/verification/GameoverManager";
 import MessageDeleter from "../../src/discord/MessageDeleter";
 import TestUtils from "../TestUtils";
-import {Client, Message} from "discord.js";
+import { Client, Message } from "discord.js";
 import mocked = jest.mocked;
 
 jest.useFakeTimers();
@@ -39,6 +39,10 @@ const messageWithoutContent = {
     'channel': channel,
 };
 
+const getMessageWithoutContent = () => {
+    return { ...messageWithoutContent, 'id': TestUtils.generateMessageId() }
+}
+
 const client = {
     'channels': {
         'cache': {
@@ -55,7 +59,7 @@ const mockGlobals: jest.Mocked<Globals> = {
     getGameoverNumber: jest.fn().mockReturnValue(20),
     getLogLevel: jest.fn().mockReturnValue('debug'),
     getRankWonMessageContent: jest.fn().mockReturnValue('rankWonMsg'),
-    getRanks: jest.fn().mockReturnValue({'10': '123'}),
+    getRanks: jest.fn().mockReturnValue({ '10': '123' }),
     getReadMessagesCount: jest.fn().mockReturnValue(20),
     getWatchedChannel: jest.fn().mockReturnValue(channelName),
     getWrongIncrementMessage: jest.fn().mockReturnValue('wrongIncrementMsg'),
@@ -89,11 +93,11 @@ afterEach(() => {
 
 test('Verify message handling', () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '3',
     } as unknown as Message;
-    const messages = [{...messageWithoutContent, 'content': '1'},
-        {...messageWithoutContent, 'content': '2'},
+    const messages = [{ ...getMessageWithoutContent(), 'content': '1' },
+    { ...getMessageWithoutContent(), 'content': '2' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
@@ -102,13 +106,13 @@ test('Verify message handling', () => {
 
 test('Verify wrong message format handling', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': 'qwe',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': '1'},
-        {...messageWithoutContent, 'content': '2'},
+        { ...getMessageWithoutContent(), 'content': '1' },
+        { ...getMessageWithoutContent(), 'content': '2' },
         lastMessage] as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
@@ -124,13 +128,13 @@ test('Verify wrong message format handling', async () => {
 
 test('Verify wrong number posted handling', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '4',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': '1'},
-        {...messageWithoutContent, 'content': '2'},
+        { ...getMessageWithoutContent(), 'content': '1' },
+        { ...getMessageWithoutContent(), 'content': '2' },
         lastMessage
     ] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
@@ -147,7 +151,7 @@ test('Verify wrong number posted handling', async () => {
 
 test('Verify empty channel - writing rules', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': 'Rules and so on',
     } as unknown as Message;
     const messages = [lastMessage] as unknown as Array<Message>;
@@ -158,13 +162,13 @@ test('Verify empty channel - writing rules', async () => {
 
 test('Verify writing rules', () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': 'Rules and so on',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': 'Rules line 1'},
-        {...messageWithoutContent, 'content': 'Rules line 2'},
+        { ...getMessageWithoutContent(), 'content': 'Rules line 1' },
+        { ...getMessageWithoutContent(), 'content': 'Rules line 2' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
@@ -173,7 +177,7 @@ test('Verify writing rules', () => {
 
 test('Verify first number posted', () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '1',
     } as unknown as Message;
 
@@ -185,14 +189,14 @@ test('Verify first number posted', () => {
 
 test('Verify error thrown on wrong channel state', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': 'Rules and so on',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': 'Rules line 1'},
-        {...messageWithoutContent, 'content': '1'},
-        {...messageWithoutContent, 'content': 'Rules line 2'},
+        { ...getMessageWithoutContent(), 'content': 'Rules line 1' },
+        { ...getMessageWithoutContent(), 'content': '1' },
+        { ...getMessageWithoutContent(), 'content': 'Rules line 2' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
@@ -207,13 +211,13 @@ test('Verify error thrown on wrong channel state', async () => {
 
 test('Verify first number posted after rules', () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '1',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': 'Rules line 1'},
-        {...messageWithoutContent, 'content': 'Rules line 2'},
+        { ...getMessageWithoutContent(), 'content': 'Rules line 1' },
+        { ...getMessageWithoutContent(), 'content': 'Rules line 2' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
@@ -222,13 +226,13 @@ test('Verify first number posted after rules', () => {
 
 test('Verify error thrown on wrong first number', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '2',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': 'Rules line 1'},
-        {...messageWithoutContent, 'content': 'Rules line 2'},
+        { ...getMessageWithoutContent(), 'content': 'Rules line 1' },
+        { ...getMessageWithoutContent(), 'content': 'Rules line 2' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
@@ -243,13 +247,13 @@ test('Verify error thrown on wrong first number', async () => {
 
 test('Verify rank granted for prized number', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '10',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': '8'},
-        {...messageWithoutContent, 'content': '9'},
+        { ...getMessageWithoutContent(), 'content': '8' },
+        { ...getMessageWithoutContent(), 'content': '9' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
@@ -262,13 +266,13 @@ test('Verify rank granted for prized number', async () => {
 
 test('Verify gameover for last number', async () => {
     const lastMessage = {
-        ...messageWithoutContent,
+        ...getMessageWithoutContent(),
         'content': '20',
     } as unknown as Message;
 
     const messages = [
-        {...messageWithoutContent, 'content': '18'},
-        {...messageWithoutContent, 'content': '19'},
+        { ...getMessageWithoutContent(), 'content': '18' },
+        { ...getMessageWithoutContent(), 'content': '19' },
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 

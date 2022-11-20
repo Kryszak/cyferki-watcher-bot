@@ -20,17 +20,17 @@ export default class RoleAdder {
         this.loggerFactory = loggerFactory;
     }
 
-    addRoleToUser(message: Message, roleId: string): void {
+    async addRoleToUser(message: Message, roleId: string): Promise<void> {
         const logger: Logger = this.loggerFactory.getLogger(message.guild.name);
         try {
             logger.info(`Adding roleId=${roleId} to user=${message.author.username}`);
             if (!this.hasRole(message.member, roleId)) {
-                this.messageFetcher.fetchMessage(message)
-                    .then(() => {
-                        this.messageSender.notifyPrizedNumber(message.channel as GuildChannel, message.author.id, roleId);
+                await this.messageFetcher.fetchMessage(message)
+                    .then(async () => {
+                        await this.messageSender.notifyPrizedNumber(message.channel as GuildChannel, message.author.id, roleId);
                     })
-                    .then(() => {
-                        return message.member.roles.add(roleId);
+                    .then(async () => {
+                        return await message.member.roles.add(roleId);
                     })
                     .finally(() => {
                         logger.info(`Successfully added roleId=${roleId} to user=${message.author.username}`);
