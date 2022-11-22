@@ -5,14 +5,15 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
+  silent: true,
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        isolatedModules: true,
+      },
+    ]
   },
   preset: 'ts-jest',
   testEnvironment: 'node',
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  },
 };

@@ -14,7 +14,6 @@ import TestUtils from "../TestUtils";
 import { Client, Message } from "discord.js";
 import mocked = jest.mocked;
 
-jest.useFakeTimers();
 jest.mock("../../src/discord/MessageFetcher");
 jest.mock("../../src/discord/MessageSender");
 jest.mock("../../src/discord/MessageDeleter");
@@ -25,8 +24,18 @@ const channel = {
     'name': channelName,
     'messages': {
         'fetch': () => Promise.resolve(),
+    },
+    'guild': {
+        'name': 'test guild',
+        'roles': {
+            'everyone': '@everyone'
+        }
+    },
+    'permissionOverwrites': {
+        'edit': () => Promise.resolve()
     }
 };
+
 const messageWithoutContent = {
     'guild': {
         'name': 'test guild',
@@ -73,7 +82,7 @@ const mockMessageDeleter = mocked(new MessageDeleter(loggerFactory));
 const roleAdder = new RoleAdder(mockMessageFetcher, mockMessageSender, loggerFactory);
 const mockChannelUtils = mocked(new ChannelUtils(mockGlobals, loggerFactory));
 const prizeManager = new PrizeManager(mockGlobals, roleAdder, mockMessageFetcher);
-const gameoverManager = new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender);
+const gameoverManager = mocked(new GameoverManager(mockGlobals, mockChannelUtils, mockMessageSender));
 const errorHandler = new ErrorHandler(mockMessageFetcher, mockMessageSender, mockMessageDeleter, loggerFactory);
 const subject = new MessageVerificator(
     messageUtils,
@@ -117,8 +126,8 @@ test('Verify wrong message format handling', async () => {
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-    await subject.verifyNewMessage(lastMessage, client);
-    await TestUtils.waitForAsyncCalls(1);
+    subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(2);
 
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyWrongMessageFormat).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -140,8 +149,8 @@ test('Verify wrong number posted handling', async () => {
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-    await subject.verifyNewMessage(lastMessage, client);
-    await TestUtils.waitForAsyncCalls(2);
+    subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(3);
 
     expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledTimes(1);
     expect(mockMessageSender.notifyWrongNumberProvided).toHaveBeenCalledWith(channel, lastMessage.author.id);
@@ -258,7 +267,7 @@ test('Verify rank granted for prized number', async () => {
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
     mockMessageFetcher.fetchMessage.mockReturnValue(Promise.resolve(lastMessage));
 
-    await subject.verifyNewMessage(lastMessage, client);
+    subject.verifyNewMessage(lastMessage, client);
     await TestUtils.waitForAsyncCalls(1);
 
     expect(roleAdder.addRoleToUser).toHaveBeenCalledTimes(1);
@@ -276,7 +285,8 @@ test('Verify gameover for last number', async () => {
         lastMessage] as unknown as Array<Message>;
     mockMessageFetcher.getLastMessagesFromWatchedChannel.mockReturnValue(Promise.resolve(messages));
 
-    await subject.verifyNewMessage(lastMessage, client);
+    subject.verifyNewMessage(lastMessage, client);
+    await TestUtils.waitForAsyncCalls(2);
 
     expect(mockMessageSender.notifyGameOver).toHaveBeenCalledTimes(1);
 });

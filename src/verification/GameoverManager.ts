@@ -21,11 +21,8 @@ export default class GameoverManager {
 
     async checkForGameOver(verifiedNumber: number, channel: GuildChannel): Promise<void> {
         if (verifiedNumber === this.globals.getGameoverNumber()) {
-            new Promise((resolve) => {
-                setTimeout(resolve.bind(null, this.messageSender.notifyGameOver(channel)), 3000);
-            }).then(async () => {
-                await this.channelUtils.removeSendMessagePermissions(channel);
-            });
+            await this.messageSender.notifyGameOver(channel);
+            await this.channelUtils.removeSendMessagePermissions(channel);
         }
     }
 }

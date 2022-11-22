@@ -6,7 +6,6 @@ import ChannelUtils from "../../src/discord/ChannelUtils";
 import {GuildChannel} from "discord.js";
 import mocked = jest.mocked;
 
-jest.useFakeTimers();
 jest.mock("../../src/discord/MessageSender");
 jest.mock("../../src/discord/ChannelUtils");
 
