@@ -22,7 +22,7 @@ Game rules can be found in [Rules](./Rules.md)
 In main project directory create `.env` file with following contents:
 ```bash
 CLIENT_TOKEN=<bot's token>
-BOT_WRONG_NUMBER_MESSAGE=<name of channel to watch>
+WATCHED_CHANNEL=test1=<name of channel to watch>
 BOT_ERROR_MESSAGE=<Content of message sent, when user posts wrong number, e.g. '${author} learn learn to count'>
 BOT_WRONG_MESSAGE_FORMAT=<Content of message sent, when user posts message in wrong format, 
 e.g. '${author} read game rules - message was not correct'>
